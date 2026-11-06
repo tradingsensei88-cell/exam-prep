@@ -1,0 +1,4703 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Study Progress Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS & PALETTE (STRICT 3-COLOR DERIVATION)
+       ========================================================================== */
+    :root {
+      /* Core Palette */
+      --midnight: #030407;
+      --cobalt: #1558C9;
+      --lime: #D4FF24;
+
+      /* Derived Dark Surfaces */
+      --bg-page: #030407;
+      --surface-1: #0A0D14;
+      --surface-2: #0F131C;
+      --surface-3: #151A26;
+      --surface-glass: rgba(10, 13, 20, 0.78);
+      --surface-glass-heavy: rgba(10, 13, 20, 0.92);
+
+      /* Derived Cobalt Tints & Borders */
+      --border-subtle: rgba(21, 88, 201, 0.18);
+      --border-default: rgba(21, 88, 201, 0.28);
+      --border-strong: rgba(21, 88, 201, 0.55);
+      --cobalt-soft: rgba(21, 88, 201, 0.14);
+      --cobalt-medium: rgba(21, 88, 201, 0.26);
+      --cobalt-glow: rgba(21, 88, 201, 0.38);
+      --card-top-highlight: inset 0 1px 0 rgba(242, 245, 250, 0.06);
+
+      /* Derived Lime Tints */
+      --lime-soft: rgba(212, 255, 36, 0.12);
+      --lime-medium: rgba(212, 255, 36, 0.25);
+      --lime-glow: rgba(212, 255, 36, 0.35);
+      --text-on-lime: #030407;
+
+      /* Typography Colors */
+      --text-primary: #F2F5FA;
+      --text-muted: rgba(242, 245, 250, 0.62);
+      --text-faint: rgba(242, 245, 250, 0.38);
+
+      /* Heatmap Scale (Midnight -> Cobalt -> Lime) */
+      --heat-0: #0F131C;
+      --heat-1: rgba(21, 88, 201, 0.32);
+      --heat-2: rgba(21, 88, 201, 0.62);
+      --heat-3: #1558C9;
+      --heat-4: #D4FF24;
+
+      /* Layout & Geometry (8px Spacing System) */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+
+      --sidebar-width: 272px;
+      --topbar-height: 64px;
+
+      --font-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+      --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Light Theme Override (Preserving Cobalt & Lime Accents + WCAG AA Contrast) */
+    html[data-theme="light"] {
+      --bg-page: #F2F5FA;
+      --surface-1: #FFFFFF;
+      --surface-2: #E7ECF6;
+      --surface-3: #DAE3F2;
+      --surface-glass: rgba(242, 245, 250, 0.84);
+      --surface-glass-heavy: rgba(255, 255, 255, 0.96);
+
+      --border-subtle: rgba(21, 88, 201, 0.16);
+      --border-default: rgba(21, 88, 201, 0.28);
+      --border-strong: rgba(21, 88, 201, 0.65);
+      --cobalt-soft: rgba(21, 88, 201, 0.10);
+      --cobalt-medium: rgba(21, 88, 201, 0.20);
+      --cobalt-glow: rgba(21, 88, 201, 0.24);
+      --card-top-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+
+      --lime-soft: rgba(3, 4, 7, 0.06);
+      --lime-medium: rgba(212, 255, 36, 0.45);
+      --text-primary: #030407;
+      --text-muted: rgba(3, 4, 7, 0.65);
+      --text-faint: rgba(3, 4, 7, 0.45);
+
+      --heat-0: #E2E8F4;
+      --heat-1: rgba(21, 88, 201, 0.28);
+      --heat-2: rgba(21, 88, 201, 0.56);
+      --heat-3: #1558C9;
+      --heat-4: #030407;
+    }
+
+    /* ==========================================================================
+       2. RESET, SCROLLBARS, AMBIENT TEXTURE & BASE TYPOGRAPHY
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    ::selection {
+      background: var(--cobalt);
+      color: #F2F5FA;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-page);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(21, 88, 201, 0.45);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--cobalt);
+    }
+
+    html, body {
+      height: 100%;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Cobalt Glow + Subtle Technical Grid Texture */
+    body::before {
+      content: "";
+      position: fixed;
+      top: -180px;
+      right: -120px;
+      width: 680px;
+      height: 680px;
+      background: radial-gradient(circle, rgba(21, 88, 201, 0.22) 0%, rgba(21, 88, 201, 0.05) 45%, transparent 70%);
+      filter: blur(60px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(21, 88, 201, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(21, 88, 201, 0.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(ellipse at 50% 20%, black 30%, transparent 85%);
+      -webkit-mask-image: radial-gradient(ellipse at 50% 20%, black 30%, transparent 85%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    h1, h2, h3, h4, .num-font {
+      font-family: var(--font-heading);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: none;
+    }
+
+    button {
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.14s var(--ease-out), background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    button:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    /* Accessibility Focus Ring */
+    :focus-visible {
+      outline: 2px solid var(--cobalt);
+      outline-offset: 2px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Reduced Motion Support */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+    body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+
+    /* ==========================================================================
+       3. APP SHELL & LAYOUT (SIDEBAR + MAIN + MOBILE NAV)
+       ========================================================================== */
+    .app-shell {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      min-height: 100vh;
+    }
+
+    /* Left Sidebar */
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      background: linear-gradient(180deg, var(--surface-1) 0%, var(--bg-page) 100%);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-4);
+      gap: var(--space-4);
+      overflow-y: auto;
+      z-index: 30;
+      transition: opacity 0.25s ease, filter 0.25s ease, transform 0.28s var(--ease-spring);
+    }
+
+    body.focus-mode .sidebar {
+      opacity: 0.22;
+      filter: blur(1px);
+      pointer-events: none;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-1) var(--space-2);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--cobalt) 0%, #0A2E73 100%);
+      border: 1px solid rgba(212, 255, 36, 0.45);
+      box-shadow: 0 0 18px rgba(21, 88, 201, 0.45);
+      display: grid;
+      place-items: center;
+      color: var(--lime);
+      flex-shrink: 0;
+    }
+
+    .cmd-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 9px 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      font-size: 13px;
+      box-shadow: var(--card-top-highlight);
+    }
+    .cmd-trigger:hover {
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+      box-shadow: 0 0 16px rgba(21, 88, 201, 0.2);
+    }
+
+    .kbd {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px 6px;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 5px;
+      background: var(--surface-3);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+    }
+
+    .nav-section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-faint);
+      padding: 0 var(--space-2);
+      margin-bottom: var(--space-1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      list-style: none;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 13.5px;
+      border: 1px solid transparent;
+      text-align: left;
+      position: relative;
+    }
+    .nav-item:hover {
+      background: var(--surface-2);
+      color: var(--text-primary);
+      border-color: var(--border-subtle);
+    }
+    .nav-item.active {
+      background: linear-gradient(90deg, var(--cobalt-medium) 0%, rgba(21, 88, 201, 0.05) 100%);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+      box-shadow: 0 4px 16px rgba(21, 88, 201, 0.18);
+    }
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      left: -1px;
+      top: 8px;
+      bottom: 8px;
+      width: 3px;
+      border-radius: 0 4px 4px 0;
+      background: var(--lime);
+    }
+
+    .nav-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .nav-item-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .subject-badge-sm {
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      background: var(--surface-3);
+      border: 1px solid var(--border-default);
+      display: grid;
+      place-items: center;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-primary);
+      flex-shrink: 0;
+    }
+    .nav-item.active .subject-badge-sm {
+      background: var(--cobalt);
+      color: #F2F5FA;
+      border-color: var(--lime);
+    }
+
+    .mini-ring-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      font-family: var(--font-heading);
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: var(--space-3);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .sidebar-actions-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .icon-btn-labelled {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .icon-btn-labelled:hover {
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+      background: var(--surface-3);
+    }
+
+    /* Main Content Area */
+    .main-area {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding-bottom: 88px;
+    }
+
+    /* Sticky Glass Top Bar */
+    .topbar {
+      position: sticky;
+      top: 0;
+      height: var(--topbar-height);
+      background: var(--surface-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 var(--space-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      z-index: 20;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      min-width: 0;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      border: 1px solid var(--border-subtle);
+      place-items: center;
+    }
+
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .breadcrumbs .crumb-link {
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    .breadcrumbs .crumb-link:hover {
+      color: var(--text-primary);
+    }
+    .breadcrumbs .crumb-current {
+      color: var(--text-primary);
+      font-weight: 600;
+      font-family: var(--font-heading);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    /* Pomodoro / Focus Widget in Topbar */
+    .pomo-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-default);
+      font-family: var(--font-heading);
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+    .pomo-pill.running {
+      border-color: var(--lime);
+      box-shadow: 0 0 14px rgba(212, 255, 36, 0.22);
+    }
+
+    .streak-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(21, 88, 201, 0.22), rgba(212, 255, 36, 0.10));
+      border: 1px solid var(--border-strong);
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--lime);
+    }
+    html[data-theme="light"] .streak-pill {
+      background: var(--midnight);
+      color: var(--lime);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 13px;
+      border: 1px solid transparent;
+      white-space: nowrap;
+      min-height: 36px;
+    }
+    .btn-primary {
+      background: var(--cobalt);
+      color: #F2F5FA;
+      border-color: rgba(242, 245, 250, 0.16);
+      box-shadow: 0 4px 16px rgba(21, 88, 201, 0.35);
+    }
+    .btn-primary:hover {
+      background: #1B66E4;
+      box-shadow: 0 6px 22px rgba(21, 88, 201, 0.55);
+    }
+
+    .btn-lime {
+      background: var(--lime);
+      color: var(--text-on-lime);
+      font-weight: 700;
+      box-shadow: 0 4px 18px rgba(212, 255, 36, 0.28);
+    }
+    .btn-lime:hover {
+      filter: brightness(1.05);
+      box-shadow: 0 6px 24px rgba(212, 255, 36, 0.45);
+    }
+
+    .btn-secondary {
+      background: var(--surface-2);
+      color: var(--text-primary);
+      border-color: var(--border-default);
+      box-shadow: var(--card-top-highlight);
+    }
+    .btn-secondary:hover {
+      background: var(--surface-3);
+      border-color: var(--border-strong);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      padding: 6px 10px;
+    }
+    .btn-ghost:hover {
+      background: var(--surface-2);
+      color: var(--text-primary);
+    }
+
+    /* Content Container & View Transition */
+    .view-container {
+      padding: var(--space-6);
+      max-width: 1360px;
+      width: 100%;
+      margin: 0 auto;
+      animation: viewFadeIn 0.26s var(--ease-out);
+    }
+
+    @keyframes viewFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       4. BENTO GRID DASHBOARD & CARDS
+       ========================================================================== */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+    }
+
+    .card {
+      background: linear-gradient(165deg, var(--surface-2) 0%, var(--surface-1) 100%);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      padding: var(--space-5);
+      box-shadow: var(--card-top-highlight), 0 10px 30px rgba(3, 4, 7, 0.35);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.22s var(--ease-out), border-color 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .card-interactive {
+      cursor: pointer;
+    }
+    .card-interactive:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-strong);
+      box-shadow: var(--card-top-highlight), 0 14px 36px rgba(21, 88, 201, 0.22);
+    }
+
+    /* Staggered Load Animation */
+    .stagger-in {
+      animation: cardSlideUp 0.42s var(--ease-spring) backwards;
+    }
+    .stagger-1 { animation-delay: 0.03s; }
+    .stagger-2 { animation-delay: 0.07s; }
+    .stagger-3 { animation-delay: 0.11s; }
+    .stagger-4 { animation-delay: 0.15s; }
+    .stagger-5 { animation-delay: 0.19s; }
+    .stagger-6 { animation-delay: 0.23s; }
+
+    @keyframes cardSlideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 1. Hero Card */
+    .bento-hero {
+      grid-column: span 6;
+      background:
+        radial-gradient(circle at 90% 15%, rgba(21, 88, 201, 0.28) 0%, transparent 60%),
+        linear-gradient(165deg, var(--surface-2) 0%, var(--surface-1) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-5);
+    }
+
+    .hero-copy {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      flex: 1;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-heading);
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--lime);
+      background: var(--midnight);
+      border: 1px solid var(--border-strong);
+      padding: 4px 10px;
+      border-radius: 999px;
+      width: fit-content;
+    }
+
+    .hero-title {
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.18;
+    }
+
+    .hero-sub {
+      color: var(--text-muted);
+      font-size: 13.5px;
+      max-width: 38ch;
+    }
+
+    .hero-stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-top: var(--space-2);
+    }
+
+    .stat-pill {
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--surface-3);
+      border: 1px solid var(--border-subtle);
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+    .stat-pill strong {
+      color: var(--text-primary);
+      font-family: var(--font-heading);
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+    .hero-ring-box {
+      position: relative;
+      width: 148px;
+      height: 148px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .hero-ring-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .hero-pct {
+      font-family: var(--font-heading);
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--lime);
+      line-height: 1;
+    }
+    html[data-theme="light"] .hero-pct {
+      color: var(--cobalt);
+    }
+
+    .hero-pct-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* 2. Streak Card */
+    .bento-streak {
+      grid-column: span 3;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* 3. Completed Today Card */
+    .bento-today {
+      grid-column: span 3;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .big-metric {
+      font-family: var(--font-heading);
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1.05;
+      color: var(--text-primary);
+    }
+    .big-metric .accent-lime {
+      color: var(--lime);
+    }
+    html[data-theme="light"] .big-metric .accent-lime {
+      color: var(--cobalt);
+    }
+
+    /* 4. 12-Week Activity Heatmap */
+    .bento-heatmap {
+      grid-column: span 7;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .heatmap-wrap {
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 6px;
+      min-width: 340px;
+    }
+
+    .heatmap-col {
+      display: grid;
+      grid-template-rows: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .heat-cell {
+      aspect-ratio: 1;
+      border-radius: 4px;
+      background: var(--heat-0);
+      border: 1px solid rgba(21, 88, 201, 0.14);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      position: relative;
+    }
+    .heat-cell:hover {
+      transform: scale(1.22);
+      z-index: 2;
+      border-color: var(--lime);
+    }
+    .heat-cell[data-level="1"] { background: var(--heat-1); }
+    .heat-cell[data-level="2"] { background: var(--heat-2); }
+    .heat-cell[data-level="3"] { background: var(--heat-3); }
+    .heat-cell[data-level="4"] {
+      background: var(--heat-4);
+      box-shadow: 0 0 10px rgba(212, 255, 36, 0.35);
+    }
+
+    .heatmap-legend {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: var(--space-3);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .legend-scale {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .legend-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      border: 1px solid rgba(21, 88, 201, 0.2);
+    }
+
+    /* 7. Weekly SVG Bar Chart Card */
+    .bento-weekly {
+      grid-column: span 5;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* 5 & 6. Subjects Grid + Up Next Row */
+    .bento-subjects-section {
+      grid-column: span 8;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    .section-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+    }
+
+    .section-heading {
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .subjects-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .subject-card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding: var(--space-5);
+    }
+
+    .subject-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-3);
+    }
+
+    .subject-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--cobalt-medium), var(--surface-3));
+      border: 1px solid var(--border-strong);
+      display: grid;
+      place-items: center;
+      font-family: var(--font-heading);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--lime);
+      box-shadow: 0 4px 14px rgba(21, 88, 201, 0.24);
+    }
+    html[data-theme="light"] .subject-avatar {
+      background: var(--midnight);
+      color: var(--lime);
+    }
+
+    .pending-chip {
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--surface-3);
+      border: 1px solid var(--border-subtle);
+      font-size: 11.5px;
+      font-family: var(--font-heading);
+      color: var(--text-muted);
+    }
+    .pending-chip.done-all {
+      background: var(--lime);
+      color: var(--text-on-lime);
+      border-color: var(--lime);
+      font-weight: 700;
+    }
+
+    .subject-card-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .subject-progress-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-heading);
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .subject-progress-meta .pct-highlight {
+      color: var(--lime);
+      font-weight: 700;
+    }
+    html[data-theme="light"] .subject-progress-meta .pct-highlight {
+      color: var(--cobalt);
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      background: var(--surface-3);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(21, 88, 201, 0.16);
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cobalt) 0%, var(--lime) 100%);
+      border-radius: 999px;
+      transition: width 0.55s var(--ease-spring);
+      position: relative;
+    }
+
+    .progress-fill.shimmer::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
+      animation: barShimmer 2.4s infinite;
+    }
+
+    @keyframes barShimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* 6. Up Next Card */
+    .bento-upnext {
+      grid-column: span 4;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .upnext-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 360px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .upnext-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background: var(--surface-3);
+      border: 1px solid var(--border-subtle);
+      transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+    .upnext-item:hover {
+      border-color: var(--border-strong);
+      transform: translateX(2px);
+    }
+
+    /* ==========================================================================
+       5. SUBJECT PAGE, CHAPTERS, ITEM ROWS & INLINE EDITORS
+       ========================================================================== */
+    .subject-header-card {
+      background:
+        radial-gradient(circle at 95% 10%, rgba(21, 88, 201, 0.25) 0%, transparent 55%),
+        linear-gradient(165deg, var(--surface-2) 0%, var(--surface-1) 100%);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      padding: var(--space-5);
+      margin-bottom: var(--space-5);
+      box-shadow: var(--card-top-highlight);
+    }
+
+    .subject-header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-4);
+    }
+
+    .subject-title-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .subject-title-editable {
+      font-family: var(--font-heading);
+      font-size: 28px;
+      font-weight: 700;
+      padding: 2px 8px;
+      margin-left: -8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: text;
+    }
+    .subject-title-editable:hover {
+      border-color: var(--border-default);
+      background: var(--surface-3);
+    }
+    .subject-title-editable:focus {
+      outline: none;
+      border-color: var(--cobalt);
+      background: var(--surface-3);
+    }
+
+    .subject-actions-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .subject-hero-progress {
+      margin: var(--space-4) 0;
+    }
+
+    .subject-hero-progress-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .subject-big-status {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--lime);
+    }
+    html[data-theme="light"] .subject-big-status {
+      color: var(--cobalt);
+    }
+
+    .stats-chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: var(--space-3);
+    }
+
+    /* Filter, Search & Sort Control Bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-4);
+      padding: var(--space-3);
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+    }
+
+    .segmented-control {
+      display: inline-flex;
+      background: var(--surface-2);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      gap: 4px;
+    }
+
+    .seg-btn {
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .seg-btn:hover {
+      color: var(--text-primary);
+    }
+    .seg-btn.active {
+      background: var(--cobalt);
+      color: #F2F5FA;
+      box-shadow: 0 2px 10px rgba(21, 88, 201, 0.35);
+    }
+
+    .filter-search-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      justify-content: flex-end;
+      min-width: 260px;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+      max-width: 300px;
+    }
+    .search-input-wrap svg {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      padding: 7px 12px 7px 34px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+    .search-input:focus {
+      border-color: var(--cobalt);
+      outline: none;
+      box-shadow: 0 0 0 3px var(--cobalt-soft);
+    }
+
+    .select-control {
+      padding: 7px 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      font-size: 12.5px;
+      color: var(--text-primary);
+      cursor: pointer;
+    }
+    .select-control option {
+      background: var(--surface-2);
+      color: var(--text-primary);
+    }
+
+    /* Chapters / Units */
+    .chapters-stack {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    .chapter-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .chapter-card.chapter-pulse {
+      animation: limePulse 0.9s var(--ease-out);
+    }
+
+    @keyframes limePulse {
+      0% { box-shadow: 0 0 0 0 rgba(212, 255, 36, 0.65); border-color: var(--lime); }
+      70% { box-shadow: 0 0 0 16px rgba(212, 255, 36, 0); border-color: var(--lime); }
+      100% { box-shadow: 0 0 0 0 rgba(212, 255, 36, 0); }
+    }
+
+    .chapter-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: 14px var(--space-4);
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border-subtle);
+      user-select: none;
+    }
+
+    .chapter-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .chapter-collapse-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      color: var(--text-muted);
+      background: var(--surface-3);
+      transition: transform 0.22s var(--ease-spring);
+    }
+    .chapter-card.collapsed .chapter-collapse-btn {
+      transform: rotate(-90deg);
+    }
+
+    .chapter-title {
+      font-family: var(--font-heading);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .chapter-header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .chapter-mini-bar {
+      width: 84px;
+      height: 6px;
+      background: var(--surface-3);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .chapter-body {
+      padding: var(--space-3) var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .chapter-card.collapsed .chapter-body {
+      display: none;
+    }
+
+    /* Inline Quick-Add Input */
+    .quick-add-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      background: var(--surface-2);
+      border: 1px dashed var(--border-default);
+      border-radius: var(--radius-md);
+      margin-bottom: 6px;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .quick-add-row:focus-within {
+      border-style: solid;
+      border-color: var(--cobalt);
+      box-shadow: 0 0 0 3px var(--cobalt-soft);
+    }
+
+    .quick-add-input {
+      flex: 1;
+      padding: 6px 4px;
+      font-size: 13.5px;
+      color: var(--text-primary);
+      min-width: 0;
+    }
+    .quick-add-input::placeholder {
+      color: var(--text-faint);
+    }
+    .quick-add-input:focus {
+      outline: none;
+    }
+
+    .syntax-hint {
+      font-size: 11px;
+      color: var(--text-faint);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    /* Item Rows */
+    .items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .item-row-wrap {
+      border-radius: var(--radius-md);
+      background: var(--surface-2);
+      border: 1px solid var(--border-subtle);
+      transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.16s ease, opacity 0.2s ease;
+    }
+    .item-row-wrap:hover {
+      border-color: var(--border-strong);
+    }
+    .item-row-wrap:focus-within {
+      border-color: var(--cobalt);
+      box-shadow: 0 0 0 2px var(--cobalt-soft);
+    }
+    .item-row-wrap.completed {
+      opacity: 0.64;
+      background: rgba(15, 19, 28, 0.55);
+    }
+    html[data-theme="light"] .item-row-wrap.completed {
+      background: rgba(226, 232, 244, 0.55);
+    }
+
+    /* Drag-and-drop visual states */
+    .dragging {
+      opacity: 0.4 !important;
+      border: 1px dashed var(--lime) !important;
+    }
+    .drag-over-top {
+      box-shadow: 0 -3px 0 0 var(--lime) !important;
+    }
+    .drag-over-bottom {
+      box-shadow: 0 3px 0 0 var(--lime) !important;
+    }
+
+    .item-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      min-height: 48px;
+    }
+
+    .drag-handle {
+      color: var(--text-faint);
+      cursor: grab;
+      display: grid;
+      place-items: center;
+      padding: 4px;
+    }
+    .drag-handle:hover {
+      color: var(--text-primary);
+    }
+
+    /* Custom Lime Checkbox with Animated SVG Stroke */
+    .custom-checkbox {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      border: 2px solid var(--border-strong);
+      background: var(--surface-1);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.2s var(--ease-spring);
+    }
+    .custom-checkbox:hover {
+      border-color: var(--lime);
+      box-shadow: 0 0 10px rgba(212, 255, 36, 0.25);
+    }
+    .custom-checkbox.checked {
+      background: var(--lime);
+      border-color: var(--lime);
+      animation: checkPop 0.28s var(--ease-spring);
+    }
+    .custom-checkbox svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--text-on-lime);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      stroke-dasharray: 24;
+      stroke-dashoffset: 24;
+      transition: stroke-dashoffset 0.22s var(--ease-out);
+    }
+    .custom-checkbox.checked svg {
+      stroke-dashoffset: 0;
+    }
+
+    @keyframes checkPop {
+      0% { transform: scale(0.85); }
+      50% { transform: scale(1.16); }
+      100% { transform: scale(1); }
+    }
+
+    .item-title {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      min-width: 0;
+      word-break: break-word;
+    }
+    .item-row-wrap.completed .item-title {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    mark.search-hl {
+      background: var(--lime);
+      color: var(--text-on-lime);
+      padding: 0 3px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    .item-meta-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+
+    /* Priority Pills (Strictly derived from Midnight/Cobalt/Lime) */
+    .priority-pill {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+    }
+    .priority-easy {
+      background: var(--surface-3);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+    }
+    .priority-medium {
+      background: var(--cobalt-soft);
+      color: var(--text-primary);
+      border: 1px solid var(--border-strong);
+    }
+    .priority-hard {
+      background: var(--cobalt);
+      color: #F2F5FA;
+      border: 1px solid var(--lime);
+      box-shadow: 0 0 10px rgba(21, 88, 201, 0.35);
+    }
+
+    /* Due Date Chips (Cobalt default, Lime-outlined today, Overdue strikethrough warning without red) */
+    .due-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--cobalt-soft);
+      color: var(--text-primary);
+      border: 1px solid var(--border-default);
+      cursor: pointer;
+    }
+    .due-chip.due-today {
+      border-color: var(--lime);
+      background: rgba(212, 255, 36, 0.14);
+      color: var(--lime);
+    }
+    html[data-theme="light"] .due-chip.due-today {
+      background: var(--midnight);
+      color: var(--lime);
+    }
+    .due-chip.due-overdue {
+      background: repeating-linear-gradient(
+        -45deg,
+        rgba(21, 88, 201, 0.25),
+        rgba(21, 88, 201, 0.25) 6px,
+        rgba(212, 255, 36, 0.18) 6px,
+        rgba(212, 255, 36, 0.18) 12px
+      );
+      border: 1px solid var(--lime);
+      color: var(--text-primary);
+    }
+    .due-chip.due-overdue .due-text {
+      text-decoration: line-through;
+      text-decoration-color: var(--lime);
+      text-decoration-thickness: 2px;
+    }
+
+    .row-icon-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      color: var(--text-muted);
+    }
+    .row-icon-btn:hover {
+      background: var(--surface-3);
+      color: var(--text-primary);
+    }
+    .row-icon-btn.starred {
+      color: var(--lime);
+    }
+    html[data-theme="light"] .row-icon-btn.starred {
+      color: var(--cobalt);
+    }
+    .row-icon-btn.has-notes {
+      color: var(--cobalt);
+      background: var(--cobalt-soft);
+    }
+
+    /* Inline Notes Drawer */
+    .item-notes-drawer {
+      padding: 0 12px 12px 44px;
+      display: none;
+    }
+    .item-row-wrap.notes-open .item-notes-drawer {
+      display: block;
+      animation: viewFadeIn 0.18s ease;
+    }
+    .notes-textarea {
+      width: 100%;
+      min-height: 68px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--surface-1);
+      border: 1px solid var(--border-default);
+      color: var(--text-primary);
+      font-size: 13px;
+      resize: vertical;
+    }
+    .notes-textarea:focus {
+      outline: none;
+      border-color: var(--cobalt);
+    }
+
+    .completed-group-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 6px 4px;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .completed-group-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border-subtle);
+    }
+
+    /* ==========================================================================
+       6. MODALS, COMMAND PALETTE, TOASTS, ONBOARDING & EMPTY STATES
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 4, 7, 0.72);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 10vh var(--space-4) var(--space-4);
+      z-index: 100;
+    }
+    .modal-backdrop.open {
+      display: flex;
+      animation: viewFadeIn 0.18s var(--ease-out);
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--surface-glass-heavy);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 24px 64px rgba(3, 4, 7, 0.75), 0 0 32px rgba(21, 88, 201, 0.25);
+      overflow: hidden;
+      max-height: 82vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .modal-body {
+      padding: var(--space-5);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    .modal-footer {
+      padding: var(--space-3) var(--space-5);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      background: var(--surface-1);
+    }
+
+    /* Command Palette */
+    .cmd-input-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-default);
+    }
+    .cmd-input {
+      flex: 1;
+      font-size: 16px;
+      color: var(--text-primary);
+    }
+    .cmd-input:focus {
+      outline: none;
+    }
+    .cmd-results {
+      max-height: 360px;
+      overflow-y: auto;
+      padding: 8px;
+    }
+    .cmd-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      text-align: left;
+      color: var(--text-muted);
+    }
+    .cmd-item:hover, .cmd-item.selected {
+      background: var(--cobalt-medium);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+    }
+
+    /* Form Controls in Modals */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-label {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .form-input, .form-textarea {
+      padding: 10px 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--cobalt);
+    }
+
+    /* Toast Stack */
+    .toast-stack {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 150;
+      max-width: 380px;
+    }
+    .toast {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 16px;
+      background: var(--surface-glass-heavy);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border-strong);
+      border-left: 4px solid var(--lime);
+      border-radius: var(--radius-md);
+      box-shadow: 0 12px 32px rgba(3, 4, 7, 0.65);
+      animation: cardSlideUp 0.25s var(--ease-spring);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: var(--space-7) var(--space-4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      color: var(--text-muted);
+    }
+
+    /* Skeleton Shimmer on Initial Load */
+    .skeleton-screen {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--space-4);
+    }
+    .skel-box {
+      height: 180px;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(90deg, var(--surface-1) 25%, var(--surface-2) 50%, var(--surface-1) 75%);
+      background-size: 200% 100%;
+      animation: skelWave 1.2s infinite;
+      border: 1px solid var(--border-subtle);
+    }
+    @keyframes skelWave {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Confetti Canvas */
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    /* Onboarding Tour Banner */
+    .tour-banner {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(520px, calc(100vw - 32px));
+      background: var(--surface-glass-heavy);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--lime);
+      border-radius: var(--radius-xl);
+      padding: var(--space-4) var(--space-5);
+      box-shadow: 0 20px 50px rgba(3, 4, 7, 0.8), 0 0 28px rgba(212, 255, 36, 0.22);
+      z-index: 120;
+      display: none;
+    }
+    .tour-banner.active {
+      display: block;
+      animation: cardSlideUp 0.3s var(--ease-spring);
+    }
+
+    /* Mobile Bottom Navigation */
+    .mobile-bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: var(--surface-glass-heavy);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border-default);
+      z-index: 40;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .mob-nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      min-height: 44px;
+    }
+    .mob-nav-btn.active {
+      color: var(--lime);
+    }
+    html[data-theme="light"] .mob-nav-btn.active {
+      color: var(--cobalt);
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 4, 7, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 25;
+    }
+
+    /* Responsive Breakpoints (360px to 1920px) */
+    @media (max-width: 1120px) {
+      .bento-hero { grid-column: span 12; }
+      .bento-streak { grid-column: span 6; }
+      .bento-today { grid-column: span 6; }
+      .bento-heatmap { grid-column: span 12; }
+      .bento-weekly { grid-column: span 12; }
+      .bento-subjects-section { grid-column: span 12; }
+      .bento-upnext { grid-column: span 12; }
+    }
+
+    @media (max-width: 768px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 280px;
+        transform: translateX(-105%);
+      }
+      .sidebar.drawer-open {
+        transform: translateX(0);
+      }
+      .sidebar-overlay.open {
+        display: block;
+      }
+      .mobile-menu-btn {
+        display: grid;
+      }
+      .mobile-bottom-nav {
+        display: grid;
+      }
+      .topbar {
+        padding: 0 var(--space-4);
+      }
+      .view-container {
+        padding: var(--space-4);
+      }
+      .bento-hero {
+        flex-direction: column-reverse;
+        text-align: center;
+        align-items: center;
+      }
+      .hero-copy {
+        align-items: center;
+      }
+      .hero-stats-row {
+        justify-content: center;
+      }
+      .bento-streak, .bento-today {
+        grid-column: span 6;
+      }
+      .toast-stack {
+        bottom: 76px;
+        left: 16px;
+        right: 16px;
+        max-width: none;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .bento-streak, .bento-today {
+        grid-column: span 12;
+      }
+      .pomo-pill span.pomo-label-text {
+        display: none;
+      }
+      .syntax-hint {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Live Region for Accessibility Announcements -->
+  <div id="aria-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Mobile Drawer Overlay -->
+  <div id="sidebar-overlay" class="sidebar-overlay" data-action="close-drawer"></div>
+
+  <div class="app-shell">
+    <!-- ======================================================================
+         LEFT SIDEBAR
+         ====================================================================== -->
+    <aside id="sidebar" class="sidebar" aria-label="Primary Navigation">
+      <div class="brand">
+        <a href="#dashboard" class="brand-logo" data-action="nav-dashboard">
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </span>
+          <span>StudyTracker</span>
+        </a>
+        <span class="kbd" title="Keyboard shortcuts">?</span>
+      </div>
+
+      <button type="button" class="cmd-trigger" data-action="open-cmd" aria-label="Open Command Palette">
+        <span style="display:flex;align-items:center;gap:8px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          Quick jump...
+        </span>
+        <span class="kbd">Ctrl K</span>
+      </button>
+
+      <div>
+        <div class="nav-section-label">Workspace</div>
+        <ul class="nav-list">
+          <li>
+            <button type="button" class="nav-item" id="nav-dashboard-btn" data-action="nav-dashboard">
+              <span class="nav-item-left">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="9" rx="1.5"/>
+                  <rect x="14" y="3" width="7" height="5" rx="1.5"/>
+                  <rect x="14" y="12" width="7" height="9" rx="1.5"/>
+                  <rect x="3" y="16" width="7" height="5" rx="1.5"/>
+                </svg>
+                <span class="nav-item-title">Dashboard</span>
+              </span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-item" id="nav-revise-btn" data-action="nav-revise">
+              <span class="nav-item-left">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                <span class="nav-item-title">Revise Later</span>
+              </span>
+              <span id="sidebar-revise-count" class="kbd">0</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div style="flex:1;display:flex;flex-direction:column;min-height:0;">
+        <div class="nav-section-label">
+          <span>Subjects</span>
+          <button type="button" class="btn-ghost" style="padding:2px 6px;font-size:11px;color:var(--lime);" data-action="new-subject" title="New Subject (S)">+ Add</button>
+        </div>
+        <ul id="sidebar-subjects-list" class="nav-list" style="overflow-y:auto;padding-right:2px;"></ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button type="button" class="btn btn-primary" style="width:100%;" data-action="new-subject">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          New Subject
+        </button>
+        <div class="sidebar-actions-row">
+          <button type="button" class="icon-btn-labelled" data-action="toggle-theme" title="Toggle Dark/Light Theme">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+            </svg>
+            Theme
+          </button>
+          <button type="button" class="icon-btn-labelled" data-action="open-settings" title="Settings">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            Config
+          </button>
+          <button type="button" class="icon-btn-labelled" data-action="open-shortcuts" title="Keyboard Shortcuts (?)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/>
+            </svg>
+            Keys
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ======================================================================
+         MAIN AREA (STICKY TOPBAR + DYNAMIC VIEW)
+         ====================================================================== -->
+    <div class="main-area">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-btn" data-action="open-drawer" aria-label="Open Subjects Drawer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12h18M3 6h18M3 18h18"/>
+            </svg>
+          </button>
+          <nav id="breadcrumbs" class="breadcrumbs" aria-label="Breadcrumb"></nav>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Built-in Pomodoro Focus Timer -->
+          <div id="pomo-widget" class="pomo-pill" title="Pomodoro Focus Timer (25m / 5m)">
+            <button type="button" data-action="toggle-pomo" style="display:flex;align-items:center;gap:6px;" aria-label="Start or Pause Pomodoro Timer">
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" fill="none" stroke="rgba(21,88,201,0.3)" stroke-width="2.5"/>
+                <circle id="pomo-ring-circle" cx="12" cy="12" r="9" fill="none" stroke="var(--lime)" stroke-width="2.5" stroke-dasharray="56.5" stroke-dashoffset="0" transform="rotate(-90 12 12)"/>
+              </svg>
+              <span id="pomo-time-display">25:00</span>
+            </button>
+            <button type="button" class="btn-ghost" style="padding:2px 6px;font-size:11px;" data-action="toggle-focus-mode" id="focus-mode-btn" title="Toggle Focus Mode (F)">
+              <span class="pomo-label-text">Focus</span>
+            </button>
+          </div>
+
+          <button type="button" class="btn btn-secondary" data-action="quick-add-modal" title="Quick Add Study Item (N)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            <span>Quick Add</span>
+          </button>
+
+          <div class="streak-pill" title="Current Daily Study Streak">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <path d="M12 2c1.8 3.6 5 5.6 5 10.2a5 5 0 1 1-10 0c0-2.3 1.1-4.3 2.4-5.8.3 1.6 1.5 2.4 1.5 2.4S10.2 5.2 12 2z"/>
+            </svg>
+            <span id="topbar-streak-count">0d</span>
+          </div>
+        </div>
+      </header>
+
+      <main id="app-view" class="view-container" tabindex="-1"></main>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Bar -->
+  <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+    <button type="button" class="mob-nav-btn active" id="mob-nav-dashboard" data-action="nav-dashboard">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
+      </svg>
+      <span>Dashboard</span>
+    </button>
+    <button type="button" class="mob-nav-btn" id="mob-nav-subjects" data-action="open-drawer">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+      <span>Subjects</span>
+    </button>
+    <button type="button" class="mob-nav-btn" data-action="quick-add-modal">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>
+      </svg>
+      <span>Add Item</span>
+    </button>
+    <button type="button" class="mob-nav-btn" id="mob-nav-revise" data-action="nav-revise">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+      <span>Revise</span>
+    </button>
+  </nav>
+
+  <!-- ========================================================================
+       COMMAND PALETTE MODAL (Ctrl/Cmd + K)
+       ======================================================================== -->
+  <div id="cmd-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="Command Palette">
+    <div class="modal-card" style="max-width:600px;">
+      <div class="cmd-input-bar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cobalt)" stroke-width="2.2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input type="text" id="cmd-search-input" class="cmd-input" placeholder="Search subjects, topics, or type a command..." autocomplete="off" />
+        <span class="kbd">ESC</span>
+      </div>
+      <div id="cmd-results-list" class="cmd-results"></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       GENERIC DYNAMIC MODAL (New Subject, Bulk Add, Export/Import, Settings, Celebration)
+       ======================================================================== -->
+  <div id="generic-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="generic-modal-title" class="modal-title">Modal</h3>
+        <button type="button" class="row-icon-btn" data-action="close-modal" aria-label="Close modal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div id="generic-modal-body" class="modal-body"></div>
+      <div id="generic-modal-footer" class="modal-footer"></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       ONBOARDING 3-STEP LIGHTWEIGHT TOUR
+       ======================================================================== -->
+  <div id="tour-banner" class="tour-banner" role="region" aria-label="Onboarding Tour">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <span class="eyebrow" id="tour-step-badge">Step 1 of 3</span>
+      <button type="button" class="btn-ghost" style="font-size:12px;" data-action="skip-tour">Skip tour</button>
+    </div>
+    <h4 id="tour-title" style="font-size:17px;margin-bottom:4px;">Welcome to Study Progress Tracker</h4>
+    <p id="tour-desc" style="color:var(--text-muted);font-size:13px;margin-bottom:14px;"></p>
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+      <button type="button" class="btn btn-secondary" id="tour-prev-btn" data-action="prev-tour">Back</button>
+      <button type="button" class="btn btn-lime" id="tour-next-btn" data-action="next-tour">Next</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification Stack -->
+  <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
+
+  <script>
+    /* ==========================================================================
+       SECTION 1: UTILS & HELPERS
+       ========================================================================== */
+    const STORAGE_KEY = 'study_progress_tracker_v1';
+
+    function uid(prefix = 'id') {
+      return `${prefix}_${Math.random().toString(36).slice(2, 9)}_${Date.now().toString(36)}`;
+    }
+
+    function todayISO(offsetDays = 0) {
+      const d = new Date();
+      d.setDate(d.getDate() + offsetDays);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function escapeHTML(str = '') {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function highlightMatch(text, query) {
+      const safeText = escapeHTML(text);
+      if (!query || !query.trim()) return safeText;
+      const escapedQuery = query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(${escapedQuery})`, 'gi');
+      return safeText.replace(regex, '<mark class="search-hl">$1</mark>');
+    }
+
+    function announce(msg) {
+      const el = document.getElementById('aria-live');
+      if (el) el.textContent = msg;
+    }
+
+    // Parse rapid entry syntax: "Topic name !hard #unit2 @tomorrow *"
+    function parseQuickInput(rawText) {
+      let title = rawText.trim();
+      let priority = 'medium';
+      let chapterHint = null;
+      let dueDate = null;
+      let starred = false;
+
+      if (/(^|\s)\*(\s|$)/.test(title)) {
+        starred = true;
+        title = title.replace(/(^|\s)\*(\s|$)/g, ' ').trim();
+      }
+
+      const priMatch = title.match(/(?:^|\s)!(easy|medium|hard)\b/i);
+      if (priMatch) {
+        priority = priMatch[1].toLowerCase();
+        title = title.replace(priMatch[0], ' ').trim();
+      }
+
+      const chapMatch = title.match(/(?:^|\s)#([^\s]+)/);
+      if (chapMatch) {
+        chapterHint = chapMatch[1].replace(/-/g, ' ');
+        title = title.replace(chapMatch[0], ' ').trim();
+      }
+
+      const dateMatch = title.match(/(?:^|\s)@([^\s]+)/i);
+      if (dateMatch) {
+        const token = dateMatch[1].toLowerCase();
+        if (token === 'today') dueDate = todayISO(0);
+        else if (token === 'tomorrow' || token === 'tmrw') dueDate = todayISO(1);
+        else if (token === 'overdue' || token === 'yesterday') dueDate = todayISO(-1);
+        else if (/^\+(\d+)d$/.test(token)) {
+          const days = parseInt(token.match(/^\+(\d+)d$/)[1], 10);
+          dueDate = todayISO(days);
+        } else if (/^\d{4}-\d{2}-\d{2}$/.test(token)) {
+          dueDate = token;
+        }
+        title = title.replace(dateMatch[0], ' ').trim();
+      }
+
+      return {
+        title: title || 'Untitled Topic',
+        priority,
+        chapterHint,
+        dueDate,
+        starred
+      };
+    }
+
+    function formatDueStatus(dueDate) {
+      if (!dueDate) return null;
+      const today = todayISO(0);
+      const tomorrow = todayISO(1);
+      if (dueDate < today) {
+        return { label: `Overdue (${dueDate.slice(5)})`, cls: 'due-overdue', isOverdue: true };
+      }
+      if (dueDate === today) {
+        return { label: 'Due Today', cls: 'due-today', isToday: true };
+      }
+      if (dueDate === tomorrow) {
+        return { label: 'Tomorrow', cls: '', isSoon: true };
+      }
+      return { label: dueDate.slice(5), cls: '', isSoon: dueDate <= todayISO(4) };
+    }
+
+    /* ==========================================================================
+       SECTION 2: STATE & DEFAULT PRE-LOADED SAMPLE DATA
+       ========================================================================== */
+    function buildSampleData() {
+      // Build realistic 12-week activity log leading up to today
+      const activityLog = {};
+      const pattern = [
+        0, 2, 1, 3, 0, 4, 2,  1, 0, 3, 2, 4, 1, 0,
+        2, 3, 1, 0, 2, 5, 3,  0, 1, 2, 4, 3, 2, 1,
+        3, 0, 2, 4, 1, 3, 2,  2, 4, 1, 0, 3, 5, 2,
+        1, 3, 2, 4, 0, 2, 3,  0, 2, 5, 3, 4, 1, 2,
+        3, 1, 4, 2, 5, 3, 0,  2, 3, 1, 4, 2, 3, 1,
+        2, 4, 3, 1, 2, 4, 2,  0, 3, 2, 4, 5, 3, 4
+      ];
+      for (let i = 83; i >= 0; i--) {
+        const dateKey = todayISO(-i);
+        activityLog[dateKey] = pattern[83 - i] || 0;
+      }
+      activityLog[todayISO(0)] = 4; // 4 completed today
+
+      return {
+        version: 1,
+        view: 'dashboard', // 'dashboard' | 'subject' | 'revise'
+        activeSubjectId: 'subj_nlp',
+        filter: 'all', // 'all' | 'pending' | 'completed' | 'starred'
+        searchQuery: '',
+        sortBy: 'manual', // 'manual' | 'priority' | 'dueDate' | 'alpha'
+        focusMode: false,
+        tourCompleted: false,
+        tourStep: 0,
+        settings: {
+          dailyGoal: 5,
+          groupCompleted: true,
+          showHeatmap: true,
+          reduceMotion: false,
+          theme: window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+        },
+        stats: {
+          currentStreak: 6,
+          bestStreak: 14,
+          studyMinutesToday: 50,
+          activityLog
+        },
+        subjects: [
+          {
+            id: 'subj_nlp',
+            name: 'NLP',
+            badge: 'NL',
+            createdAt: todayISO(-18),
+            lastMilestone: 50,
+            chapters: [
+              {
+                id: 'chap_nlp_1',
+                title: 'Unit 1: Foundations & Morphology',
+                collapsed: false,
+                items: [
+                  { id: 'nlp_1', title: 'Preprocessing', completed: true, priority: 'easy', starred: false, dueDate: null, notes: 'Tokenization, stemming, lemmatization, stop-word removal pipeline.' },
+                  { id: 'nlp_2', title: 'Generic NLP system', completed: true, priority: 'easy', starred: false, dueDate: null, notes: '' },
+                  { id: 'nlp_3', title: 'Ambiguities in NLP', completed: true, priority: 'medium', starred: true, dueDate: null, notes: 'Lexical, syntactic, semantic, and pragmatic ambiguity examples.' },
+                  { id: 'nlp_4', title: 'N-gram', completed: true, priority: 'medium', starred: false, dueDate: null, notes: 'Laplace smoothing, Good-Turing, and perplexity computation.' },
+                  { id: 'nlp_5', title: 'Morphological analysis', completed: true, priority: 'medium', starred: false, dueDate: null, notes: 'Finite State Transducers (FST) and inflectional vs derivational forms.' }
+                ]
+              },
+              {
+                id: 'chap_nlp_2',
+                title: 'Unit 2: Word Sense Disambiguation (WSD)',
+                collapsed: false,
+                items: [
+                  { id: 'nlp_6', title: 'WSD', completed: true, priority: 'medium', starred: false, dueDate: null, notes: 'Supervised vs dictionary-based vs minimally supervised approaches.' },
+                  { id: 'nlp_7', title: 'Lesk algorithm', completed: true, priority: 'easy', starred: true, dueDate: null, notes: 'Dictionary gloss overlap count; Simplified Lesk variant.' },
+                  { id: 'nlp_8', title: 'MaxEnt model', completed: true, priority: 'hard', starred: true, dueDate: todayISO(0), notes: 'Feature indicator functions and multinomial logistic distribution.' },
+                  { id: 'nlp_9', title: 'Naive Bayes for WSD', completed: true, priority: 'medium', starred: false, dueDate: null, notes: 'Bag-of-words context window feature independence assumption.' },
+                  { id: 'nlp_12', title: 'Word meaning relationships', completed: true, priority: 'easy', starred: false, dueDate: null, notes: 'Homonymy, polysemy, synonymy, antonymy, hyponymy, meronymy.' },
+                  { id: 'nlp_13', title: 'Yarowsky and HyperLex', completed: false, priority: 'hard', starred: true, dueDate: todayISO(0), notes: 'One sense per collocation & one sense per discourse bootstrapping.' }
+                ]
+              },
+              {
+                id: 'chap_nlp_3',
+                title: 'Unit 3: Syntactic Parsing & Sequence Models',
+                collapsed: false,
+                items: [
+                  { id: 'nlp_10', title: 'Shift-Reduce parser', completed: true, priority: 'medium', starred: false, dueDate: null, notes: 'Stack + input buffer operations: Shift, Reduce, Accept, Error.' },
+                  { id: 'nlp_11', title: 'HMM vs MaxEnt limitations', completed: false, priority: 'hard', starred: true, dueDate: todayISO(-1), notes: 'Compare generative observation independence vs label bias problem.' },
+                  { id: 'nlp_16', title: 'PCFG', completed: true, priority: 'hard', starred: false, dueDate: null, notes: 'Probabilistic Context-Free Grammar & CKY inside-outside algorithm.' },
+                  { id: 'nlp_17', title: 'Top-down vs bottom-up parsing', completed: false, priority: 'medium', starred: false, dueDate: todayISO(1), notes: 'Left-recursion pitfalls in top-down vs wasted subtrees in bottom-up.' }
+                ]
+              },
+              {
+                id: 'chap_nlp_4',
+                title: 'Unit 4: Discourse & Coreference Resolution',
+                collapsed: false,
+                items: [
+                  { id: 'nlp_14', title: 'Centering algorithm', completed: false, priority: 'hard', starred: true, dueDate: todayISO(2), notes: 'Forward-looking centers (Cf), backward-looking center (Cb), Continue/Retain/Shift transitions.' },
+                  { id: 'nlp_15', title: 'Coreference constraints', completed: false, priority: 'medium', starred: false, dueDate: todayISO(3), notes: 'Number/gender agreement, syntactic binding theory, Hobbs naive algorithm.' }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'subj_dbms',
+            name: 'DBMS',
+            badge: 'DB',
+            createdAt: todayISO(-14),
+            lastMilestone: 50,
+            chapters: [
+              {
+                id: 'chap_db_1',
+                title: 'Unit 1: Relational Model & Normalization',
+                collapsed: false,
+                items: [
+                  { id: 'db_1', title: 'Relational Algebra & Tuple Calculus', completed: true, priority: 'medium', starred: false, dueDate: null, notes: '' },
+                  { id: 'db_2', title: 'Functional Dependencies & Armstrong Axioms', completed: true, priority: 'medium', starred: false, dueDate: null, notes: '' },
+                  { id: 'db_3', title: 'BCNF vs 3NF Lossless Join Decomposition', completed: true, priority: 'hard', starred: true, dueDate: null, notes: 'Check dependency preservation vs redundancy removal.' },
+                  { id: 'db_4', title: 'Multivalued Dependencies & 4NF', completed: false, priority: 'medium', starred: false, dueDate: todayISO(1), notes: '' }
+                ]
+              },
+              {
+                id: 'chap_db_2',
+                title: 'Unit 2: Transactions, Indexing & Recovery',
+                collapsed: false,
+                items: [
+                  { id: 'db_5', title: 'Conflict Serializability & Precedence Graph', completed: true, priority: 'medium', starred: false, dueDate: null, notes: '' },
+                  { id: 'db_6', title: 'Two-Phase Locking (2PL) & Deadlock Prevention', completed: true, priority: 'hard', starred: false, dueDate: null, notes: 'Wait-Die and Wound-Wait timestamp schemes.' },
+                  { id: 'db_7', title: 'B+ Tree Insertion & Split Cost Analysis', completed: true, priority: 'medium', starred: false, dueDate: null, notes: '' },
+                  { id: 'db_8', title: 'ARIES Recovery (Analysis, Redo, Undo)', completed: false, priority: 'hard', starred: true, dueDate: todayISO(0), notes: 'Write-Ahead Logging (WAL) and LSN tracking.' }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'subj_maths',
+            name: 'Maths',
+            badge: 'MA',
+            createdAt: todayISO(-10),
+            lastMilestone: 50,
+            chapters: [
+              {
+                id: 'chap_ma_1',
+                title: 'Unit 1: Linear Algebra & Spectral Theory',
+                collapsed: false,
+                items: [
+                  { id: 'ma_1', title: 'Eigenvalues, Eigenvectors & Diagonalization', completed: true, priority: 'medium', starred: false, dueDate: null, notes: '' },
+                  { id: 'ma_2', title: 'Singular Value Decomposition (SVD)', completed: true, priority: 'hard', starred: true, dueDate: null, notes: 'Low-rank matrix approximation and pseudo-inverse.' },
+                  { id: 'ma_3', title: 'Positive Definite Matrices & Cholesky', completed: true, priority: 'medium', starred: false, dueDate: null, notes: '' }
+                ]
+              },
+              {
+                id: 'chap_ma_2',
+                title: 'Unit 2: Probability & Bayesian Inference',
+                collapsed: false,
+                items: [
+                  { id: 'ma_4', title: 'Bayes Theorem & Conjugate Priors', completed: true, priority: 'medium', starred: false, dueDate: null, notes: '' },
+                  { id: 'ma_5', title: 'Maximum Likelihood Estimation (MLE) vs MAP', completed: false, priority: 'hard', starred: true, dueDate: todayISO(2), notes: '' },
+                  { id: 'ma_6', title: 'Central Limit Theorem & Tail Bounds', completed: false, priority: 'medium', starred: false, dueDate: todayISO(4), notes: '' }
+                ]
+              }
+            ]
+          }
+        ]
+      };
+    }
+
+    let state = null;
+    let undoStack = [];
+    let openNotesIds = new Set();
+    let cmdSelectedIndex = 0;
+    let cmdFilteredActions = [];
+    let isBooting = true;
+
+    // Pomodoro State
+    let pomo = {
+      running: false,
+      mode: 'focus', // 'focus' (25m) | 'break' (5m)
+      secondsLeft: 25 * 60,
+      totalSeconds: 25 * 60,
+      intervalId: null
+    };
+
+    /* ==========================================================================
+       SECTION 3: STORAGE (VERSIONED LOCALSTORAGE WITH TRY/CATCH & DEBOUNCE)
+       ========================================================================== */
+    let storageWarningShown = false;
+    let saveTimer = null;
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.subjects)) {
+            state = parsed;
+            // Ensure today exists in activityLog
+            if (!state.stats) state.stats = { currentStreak: 1, bestStreak: 1, studyMinutesToday: 0, activityLog: {} };
+            if (typeof state.stats.activityLog[todayISO(0)] !== 'number') {
+              state.stats.activityLog[todayISO(0)] = 0;
+            }
+            return;
+          }
+        }
+      } catch (err) {
+        if (!storageWarningShown) {
+          storageWarningShown = true;
+          setTimeout(() => showToast('Local storage is unavailable. Changes will persist for this session only.'), 600);
+        }
+      }
+      state = buildSampleData();
+      saveStateImmediate();
+    }
+
+    function saveState() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveStateImmediate, 150);
+    }
+
+    function saveStateImmediate() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (err) {
+        if (!storageWarningShown) {
+          storageWarningShown = true;
+          showToast('Storage quota or permission error: unable to persist to localStorage.');
+        }
+      }
+    }
+
+    function pushUndoSnapshot(label) {
+      const snapshot = JSON.stringify({
+        subjects: state.subjects,
+        stats: state.stats,
+        activeSubjectId: state.activeSubjectId,
+        view: state.view
+      });
+      undoStack.push({ label, snapshot });
+      if (undoStack.length > 15) undoStack.shift();
+    }
+
+    function triggerUndo() {
+      const last = undoStack.pop();
+      if (!last) return;
+      const restored = JSON.parse(last.snapshot);
+      state.subjects = restored.subjects;
+      state.stats = restored.stats;
+      state.activeSubjectId = restored.activeSubjectId;
+      state.view = restored.view;
+      saveState();
+      renderApp();
+      showToast(`Undid: ${last.label}`);
+    }
+
+    /* ==========================================================================
+       SECTION 4: STATS & METRICS CALCULATIONS
+       ========================================================================== */
+    function getSubjectStats(subject) {
+      let total = 0;
+      let done = 0;
+      let starred = 0;
+      let overdue = 0;
+      const today = todayISO(0);
+
+      for (const chap of subject.chapters) {
+        for (const item of chap.items) {
+          total++;
+          if (item.completed) done++;
+          if (item.starred) starred++;
+          if (!item.completed && item.dueDate && item.dueDate < today) overdue++;
+        }
+      }
+      const pending = total - done;
+      const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+      return { total, done, pending, starred, overdue, pct };
+    }
+
+    function getOverallStats() {
+      let total = 0;
+      let done = 0;
+      let starred = 0;
+      for (const s of state.subjects) {
+        const st = getSubjectStats(s);
+        total += st.total;
+        done += st.done;
+        starred += st.starred;
+      }
+      const pending = total - done;
+      const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+      return { total, done, pending, starred, pct };
+    }
+
+    function getMotivatingMessage(pct) {
+      if (pct === 0) return { title: 'Ready for liftoff', sub: 'Check off your first concept to ignite your momentum.' };
+      if (pct < 30) return { title: 'Great start', sub: 'Early foundations are locking into place. Keep the pace steady.' };
+      if (pct < 50) return { title: 'Building velocity', sub: 'Your knowledge graph is expanding across core units.' };
+      if (pct < 80) return { title: 'Halfway there & surging', sub: 'More than half of your syllabus is conquered. Stay sharp.' };
+      if (pct < 100) return { title: 'Almost done', sub: 'Final stretch—clear the remaining high-priority topics.' };
+      return { title: 'Complete syllabus mastery', sub: 'Every single topic across your subjects is complete.' };
+    }
+
+    /* ==========================================================================
+       SECTION 5: RENDER FUNCTIONS
+       ========================================================================== */
+    function applyThemeAndPrefs() {
+      document.documentElement.setAttribute('data-theme', state.settings.theme || 'dark');
+      document.body.classList.toggle('reduce-motion', !!state.settings.reduceMotion);
+      document.body.classList.toggle('focus-mode', !!state.focusMode);
+      const focusBtn = document.getElementById('focus-mode-btn');
+      if (focusBtn) {
+        focusBtn.style.color = state.focusMode ? 'var(--lime)' : '';
+      }
+    }
+
+    function renderSidebar() {
+      const overall = getOverallStats();
+      const reviseCountEl = document.getElementById('sidebar-revise-count');
+      if (reviseCountEl) reviseCountEl.textContent = overall.starred;
+
+      const dashBtn = document.getElementById('nav-dashboard-btn');
+      const revBtn = document.getElementById('nav-revise-btn');
+      if (dashBtn) dashBtn.classList.toggle('active', state.view === 'dashboard');
+      if (revBtn) revBtn.classList.toggle('active', state.view === 'revise');
+
+      // Mobile nav active states
+      const mobDash = document.getElementById('mob-nav-dashboard');
+      const mobRev = document.getElementById('mob-nav-revise');
+      if (mobDash) mobDash.classList.toggle('active', state.view === 'dashboard');
+      if (mobRev) mobRev.classList.toggle('active', state.view === 'revise');
+
+      const listEl = document.getElementById('sidebar-subjects-list');
+      if (!listEl) return;
+
+      listEl.innerHTML = state.subjects.map((subj, idx) => {
+        const st = getSubjectStats(subj);
+        const isActive = state.view === 'subject' && state.activeSubjectId === subj.id;
+        const r = 8;
+        const circ = 2 * Math.PI * r;
+        const offset = circ - (st.pct / 100) * circ;
+        return `
+          <li draggable="true" data-drag-type="subject" data-subject-id="${subj.id}" data-index="${idx}">
+            <button type="button" class="nav-item ${isActive ? 'active' : ''}" data-action="open-subject" data-subject-id="${subj.id}">
+              <span class="nav-item-left">
+                <span class="subject-badge-sm">${escapeHTML(subj.badge || subj.name.slice(0, 2).toUpperCase())}</span>
+                <span class="nav-item-title">${escapeHTML(subj.name)}</span>
+              </span>
+              <span class="mini-ring-wrap">
+                <span>${st.pct}%</span>
+                <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+                  <circle cx="11" cy="11" r="${r}" fill="none" stroke="rgba(21,88,201,0.25)" stroke-width="2.4"/>
+                  <circle cx="11" cy="11" r="${r}" fill="none" stroke="var(--lime)" stroke-width="2.4"
+                    stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}"
+                    stroke-linecap="round" transform="rotate(-90 11 11)"/>
+                </svg>
+              </span>
+            </button>
+          </li>
+        `;
+      }).join('');
+    }
+
+    function renderTopbar() {
+      const streakEl = document.getElementById('topbar-streak-count');
+      if (streakEl) streakEl.textContent = `${state.stats.currentStreak}d`;
+
+      const crumbEl = document.getElementById('breadcrumbs');
+      if (!crumbEl) return;
+
+      if (state.view === 'dashboard') {
+        crumbEl.innerHTML = `
+          <span class="crumb-link" data-action="nav-dashboard">Workspace</span>
+          <span>/</span>
+          <span class="crumb-current">Dashboard</span>
+        `;
+      } else if (state.view === 'revise') {
+        crumbEl.innerHTML = `
+          <span class="crumb-link" data-action="nav-dashboard">Workspace</span>
+          <span>/</span>
+          <span class="crumb-current">Revise Later</span>
+        `;
+      } else {
+        const subj = state.subjects.find(s => s.id === state.activeSubjectId);
+        crumbEl.innerHTML = `
+          <span class="crumb-link" data-action="nav-dashboard">Subjects</span>
+          <span>/</span>
+          <span class="crumb-current">${subj ? escapeHTML(subj.name) : 'Subject'}</span>
+        `;
+      }
+    }
+
+    function renderDashboard(container) {
+      const overall = getOverallStats();
+      const mot = getMotivatingMessage(overall.pct);
+      const todayDone = state.stats.activityLog[todayISO(0)] || 0;
+      const goal = state.settings.dailyGoal || 5;
+      const goalPct = Math.min(100, Math.round((todayDone / goal) * 100));
+
+      // Ring geometry for Hero (r=58)
+      const heroR = 58;
+      const heroCirc = 2 * Math.PI * heroR;
+      const heroOffset = heroCirc - (overall.pct / 100) * heroCirc;
+
+      // Ring geometry for Daily Goal (r=28)
+      const goalR = 28;
+      const goalCirc = 2 * Math.PI * goalR;
+      const goalOffset = goalCirc - (goalPct / 100) * goalCirc;
+
+      // Build 12-week heatmap (84 days)
+      let heatmapColsHTML = '';
+      for (let col = 0; col < 12; col++) {
+        let cellsHTML = '';
+        for (let row = 0; row < 7; row++) {
+          const daysAgo = (11 - col) * 7 + (6 - row);
+          const dateStr = todayISO(-daysAgo);
+          const count = state.stats.activityLog[dateStr] || 0;
+          const level = count === 0 ? 0 : count === 1 ? 1 : count <= 2 ? 2 : count <= 3 ? 3 : 4;
+          cellsHTML += `<div class="heat-cell" data-level="${level}" title="${dateStr}: ${count} item${count === 1 ? '' : 's'} completed"></div>`;
+        }
+        heatmapColsHTML += `<div class="heatmap-col">${cellsHTML}</div>`;
+      }
+
+      // Build 7-day SVG Bar Chart
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const weekData = [];
+      let maxWeekVal = 4;
+      for (let i = 6; i >= 0; i--) {
+        const dStr = todayISO(-i);
+        const val = state.stats.activityLog[dStr] || 0;
+        if (val > maxWeekVal) maxWeekVal = val;
+        const dObj = new Date(dStr + 'T00:00:00');
+        weekData.push({ label: i === 0 ? 'Today' : dayNames[dObj.getDay()], val, isToday: i === 0 });
+      }
+
+      const svgBars = weekData.map((d, idx) => {
+        const x = 18 + idx * 44;
+        const maxBarH = 88;
+        const barH = Math.max(6, Math.round((d.val / maxWeekVal) * maxBarH));
+        const y = 112 - barH;
+        const fill = d.isToday ? 'var(--lime)' : 'var(--cobalt)';
+        return `
+          <g>
+            <rect x="${x}" y="24" width="26" height="${maxBarH}" rx="6" fill="rgba(21,88,201,0.12)"/>
+            <rect x="${x}" y="${y}" width="26" height="${barH}" rx="6" fill="${fill}"/>
+            <text x="${x + 13}" y="${y - 6}" text-anchor="middle" fill="var(--text-primary)" font-family="var(--font-heading)" font-size="11" font-weight="700">${d.val}</text>
+            <text x="${x + 13}" y="130" text-anchor="middle" fill="${d.isToday ? 'var(--lime)' : 'var(--text-muted)'}" font-family="var(--font-heading)" font-size="10.5" font-weight="600">${d.label}</text>
+          </g>
+        `;
+      }).join('');
+
+      // Collect "Up Next" items (overdue, due soon, or starred)
+      const upNextItems = [];
+      const today = todayISO(0);
+      for (const subj of state.subjects) {
+        for (const chap of subj.chapters) {
+          for (const item of chap.items) {
+            if (!item.completed && (item.dueDate || item.starred)) {
+              upNextItems.push({ subj, chap, item });
+            }
+          }
+        }
+      }
+      upNextItems.sort((a, b) => {
+        const aDate = a.item.dueDate || '9999-99-99';
+        const bDate = b.item.dueDate || '9999-99-99';
+        if (aDate !== bDate) return aDate.localeCompare(bDate);
+        return (b.item.starred ? 1 : 0) - (a.item.starred ? 1 : 0);
+      });
+
+      const upNextHTML = upNextItems.slice(0, 6).map(({ subj, item }) => {
+        const dueInfo = formatDueStatus(item.dueDate);
+        return `
+          <div class="upnext-item">
+            <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+              <button type="button" class="custom-checkbox" data-action="toggle-item" data-subject-id="${subj.id}" data-item-id="${item.id}" aria-label="Mark ${escapeHTML(item.title)} complete">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+              <div style="min-width:0;flex:1;cursor:pointer;" data-action="open-subject" data-subject-id="${subj.id}">
+                <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHTML(item.title)}</div>
+                <div style="font-size:11.5px;color:var(--text-muted);">${escapeHTML(subj.name)}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+              ${item.starred ? `<span style="color:var(--lime);" title="Flagged Revise Later"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>` : ''}
+              ${dueInfo ? `<span class="due-chip ${dueInfo.cls}"><span class="due-text">${dueInfo.label}</span></span>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('') || `
+        <div class="empty-state" style="padding:24px 12px;">
+          <p style="font-size:13px;">No urgent or starred items in queue.</p>
+        </div>
+      `;
+
+      // Subject cards HTML
+      const subjectCardsHTML = state.subjects.map((subj, idx) => {
+        const st = getSubjectStats(subj);
+        const r = 18;
+        const circ = 2 * Math.PI * r;
+        const offset = circ - (st.pct / 100) * circ;
+        return `
+          <article class="card card-interactive subject-card stagger-in stagger-${(idx % 5) + 1}"
+            draggable="true" data-drag-type="subject" data-subject-id="${subj.id}" data-index="${idx}"
+            data-action="open-subject" data-subject-id="${subj.id}" tabindex="0" role="button"
+            aria-label="${escapeHTML(subj.name)}: ${st.done} of ${st.total} done, ${st.pct} percent">
+            <div class="subject-card-top">
+              <div class="subject-avatar">${escapeHTML(subj.badge || subj.name.slice(0, 2).toUpperCase())}</div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="pending-chip ${st.pending === 0 && st.total > 0 ? 'done-all' : ''}">
+                  ${st.pending === 0 && st.total > 0 ? 'Complete' : `${st.pending} pending`}
+                </span>
+                <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
+                  <circle cx="22" cy="22" r="${r}" fill="none" stroke="rgba(21,88,201,0.22)" stroke-width="3.5"/>
+                  <circle cx="22" cy="22" r="${r}" fill="none" stroke="var(--lime)" stroke-width="3.5"
+                    stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}"
+                    stroke-linecap="round" transform="rotate(-90 22 22)"/>
+                </svg>
+              </div>
+            </div>
+            <div>
+              <h3 class="subject-card-title">${escapeHTML(subj.name)}</h3>
+              <div style="font-size:12px;color:var(--text-muted);">${subj.chapters.length} chapter${subj.chapters.length === 1 ? '' : 's'}</div>
+            </div>
+            <div>
+              <div class="subject-progress-meta">
+                <span>${st.done} / ${st.total} done - <strong class="pct-highlight">${st.pct}%</strong></span>
+                ${st.starred > 0 ? `<span style="color:var(--lime);">★ ${st.starred}</span>` : ''}
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" style="width:${st.pct}%;"></div>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="bento-grid">
+          <!-- 1. HERO OVERALL PROGRESS CARD -->
+          <section class="card bento-hero stagger-in stagger-1" aria-label="Overall Progress">
+            <div class="hero-copy">
+              <span class="eyebrow">Overall Mastery</span>
+              <h1 class="hero-title">${mot.title}</h1>
+              <p class="hero-sub">${mot.sub}</p>
+              <div class="hero-stats-row">
+                <div class="stat-pill"><strong>${overall.done} / ${overall.total}</strong>topics done</div>
+                <div class="stat-pill"><strong>${overall.pending}</strong>remaining</div>
+                <div class="stat-pill"><strong>${state.stats.studyMinutesToday}m</strong>focused today</div>
+              </div>
+            </div>
+            <div class="hero-ring-box">
+              <svg width="148" height="148" viewBox="0 0 148 148" aria-hidden="true">
+                <defs>
+                  <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="var(--cobalt)"/>
+                    <stop offset="100%" stop-color="var(--lime)"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="74" cy="74" r="${heroR}" fill="none" stroke="rgba(21,88,201,0.2)" stroke-width="11"/>
+                <circle cx="74" cy="74" r="${heroR}" fill="none" stroke="url(#heroGrad)" stroke-width="11"
+                  stroke-dasharray="${heroCirc.toFixed(2)}" stroke-dashoffset="${heroOffset.toFixed(2)}"
+                  stroke-linecap="round" transform="rotate(-90 74 74)"
+                  style="transition: stroke-dashoffset 0.75s var(--ease-spring);"/>
+              </svg>
+              <div class="hero-ring-center">
+                <span class="hero-pct" data-count-target="${overall.pct}">${overall.pct}%</span>
+                <span class="hero-pct-label">Completed</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 2. STREAK CARD -->
+          <section class="card bento-streak stagger-in stagger-2" aria-label="Study Streak">
+            <div class="card-header">
+              <span class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--lime)">
+                  <path d="M12 2c1.8 3.6 5 5.6 5 10.2a5 5 0 1 1-10 0c0-2.3 1.1-4.3 2.4-5.8.3 1.6 1.5 2.4 1.5 2.4S10.2 5.2 12 2z"/>
+                </svg>
+                Active Streak
+              </span>
+              <span class="kbd">Best: ${state.stats.bestStreak}d</span>
+            </div>
+            <div>
+              <div class="big-metric"><span class="accent-lime">${state.stats.currentStreak}</span> days</div>
+              <p style="font-size:12.5px;color:var(--text-muted);margin-top:6px;">
+                ${todayDone > 0 ? 'Streak locked in for today. Keep pushing!' : 'Complete 1 topic today to extend your streak.'}
+              </p>
+            </div>
+          </section>
+
+          <!-- 3. COMPLETED TODAY CARD -->
+          <section class="card bento-today stagger-in stagger-3" aria-label="Completed Today">
+            <div class="card-header">
+              <span class="card-title">Completed Today</span>
+              <button type="button" class="btn-ghost" style="padding:2px 7px;font-size:11.5px;color:var(--lime);" data-action="edit-daily-goal" title="Set Daily Goal">
+                Goal: ${goal}
+              </button>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <div>
+                <div class="big-metric"><span class="accent-lime">${todayDone}</span> / ${goal}</div>
+                <p style="font-size:12.5px;color:var(--text-muted);margin-top:6px;">
+                  ${todayDone >= goal ? 'Daily target crushed!' : `${goal - todayDone} more to hit daily goal`}
+                </p>
+              </div>
+              <svg width="68" height="68" viewBox="0 0 68 68" aria-hidden="true" style="flex-shrink:0;">
+                <circle cx="34" cy="34" r="${goalR}" fill="none" stroke="rgba(21,88,201,0.22)" stroke-width="6"/>
+                <circle cx="34" cy="34" r="${goalR}" fill="none" stroke="var(--lime)" stroke-width="6"
+                  stroke-dasharray="${goalCirc.toFixed(2)}" stroke-dashoffset="${goalOffset.toFixed(2)}"
+                  stroke-linecap="round" transform="rotate(-90 34 34)"/>
+                <text x="34" y="38" text-anchor="middle" fill="var(--text-primary)" font-family="var(--font-heading)" font-size="13" font-weight="700">${goalPct}%</text>
+              </svg>
+            </div>
+          </section>
+
+          <!-- 4. 12-WEEK ACTIVITY HEATMAP -->
+          ${state.settings.showHeatmap ? `
+          <section class="card bento-heatmap stagger-in stagger-4" aria-label="12-Week Activity Heatmap">
+            <div class="card-header">
+              <span class="card-title">12-Week Learning Cadence</span>
+              <span style="font-size:12px;color:var(--text-muted);">84-day history</span>
+            </div>
+            <div class="heatmap-wrap">
+              <div class="heatmap-grid">${heatmapColsHTML}</div>
+            </div>
+            <div class="heatmap-legend">
+              <span>Cobalt-to-Lime intensity scale</span>
+              <div class="legend-scale">
+                <span>Less</span>
+                <span class="legend-swatch" style="background:var(--heat-0);"></span>
+                <span class="legend-swatch" style="background:var(--heat-1);"></span>
+                <span class="legend-swatch" style="background:var(--heat-2);"></span>
+                <span class="legend-swatch" style="background:var(--heat-3);"></span>
+                <span class="legend-swatch" style="background:var(--heat-4);"></span>
+                <span>More</span>
+              </div>
+            </div>
+          </section>
+          ` : ''}
+
+          <!-- 7. WEEKLY BAR CHART -->
+          <section class="card bento-weekly stagger-in stagger-5" style="${!state.settings.showHeatmap ? 'grid-column: span 12;' : ''}" aria-label="Weekly Velocity Chart">
+            <div class="card-header">
+              <span class="card-title">7-Day Output</span>
+              <span style="font-size:12px;color:var(--lime);font-family:var(--font-heading);font-weight:600;">
+                ${weekData.reduce((acc, d) => acc + d.val, 0)} topics this week
+              </span>
+            </div>
+            <svg viewBox="0 0 326 138" width="100%" height="138" role="img" aria-label="Bar chart of topics completed per day over the last 7 days">
+              ${svgBars}
+            </svg>
+          </section>
+
+          <!-- 5. SUBJECTS BENTO GRID -->
+          <section class="bento-subjects-section stagger-in stagger-5">
+            <div class="section-toolbar">
+              <h2 class="section-heading">
+                <span>Your Subjects</span>
+                <span class="kbd">${state.subjects.length}</span>
+              </h2>
+              <div style="display:flex;gap:8px;">
+                <button type="button" class="btn btn-secondary" data-action="open-export-import">Backup JSON</button>
+                <button type="button" class="btn btn-primary" data-action="new-subject">+ New Subject</button>
+              </div>
+            </div>
+            ${state.subjects.length > 0 ? `<div class="subjects-cards-grid">${subjectCardsHTML}</div>` : `
+              <div class="card empty-state">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--cobalt)" stroke-width="1.6">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                  <path d="M9 9h6M9 13h4" stroke="var(--lime)"/>
+                </svg>
+                <h3 style="color:var(--text-primary);font-size:17px;">No subjects yet</h3>
+                <p>Create your first subject to start tracking chapters and study topics.</p>
+                <button type="button" class="btn btn-lime" data-action="new-subject">+ Create First Subject</button>
+              </div>
+            `}
+          </section>
+
+          <!-- 6. UP NEXT / REVISE LATER QUEUE -->
+          <section class="card bento-upnext stagger-in stagger-6" aria-label="Up Next Queue">
+            <div class="card-header">
+              <span class="card-title">Up Next & Revise Queue</span>
+              <button type="button" class="btn-ghost" style="padding:2px 6px;font-size:11.5px;color:var(--lime);" data-action="nav-revise">View All</button>
+            </div>
+            <div class="upnext-list">${upNextHTML}</div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderSubjectPage(container) {
+      const subj = state.subjects.find(s => s.id === state.activeSubjectId) || state.subjects[0];
+      if (!subj) {
+        state.view = 'dashboard';
+        renderDashboard(container);
+        return;
+      }
+      state.activeSubjectId = subj.id;
+      const st = getSubjectStats(subj);
+
+      const chaptersHTML = subj.chapters.map((chap, cIdx) => {
+        const chapTotal = chap.items.length;
+        const chapDone = chap.items.filter(i => i.completed).length;
+        const chapPct = chapTotal === 0 ? 0 : Math.round((chapDone / chapTotal) * 100);
+
+        // Filter & search items
+        let filteredItems = chap.items.filter(item => {
+          if (state.focusMode && item.completed) return false;
+          if (state.filter === 'pending' && item.completed) return false;
+          if (state.filter === 'completed' && !item.completed) return false;
+          if (state.filter === 'starred' && !item.starred) return false;
+          if (state.searchQuery.trim()) {
+            const q = state.searchQuery.trim().toLowerCase();
+            const matchTitle = item.title.toLowerCase().includes(q);
+            const matchNotes = (item.notes || '').toLowerCase().includes(q);
+            return matchTitle || matchNotes;
+          }
+          return true;
+        });
+
+        // Sort items
+        const priWeight = { hard: 3, medium: 2, easy: 1 };
+        if (state.sortBy === 'priority') {
+          filteredItems = [...filteredItems].sort((a, b) => (priWeight[b.priority] || 2) - (priWeight[a.priority] || 2));
+        } else if (state.sortBy === 'dueDate') {
+          filteredItems = [...filteredItems].sort((a, b) => (a.dueDate || '9999-99-99').localeCompare(b.dueDate || '9999-99-99'));
+        } else if (state.sortBy === 'alpha') {
+          filteredItems = [...filteredItems].sort((a, b) => a.title.localeCompare(b.title));
+        }
+
+        const activeItems = state.settings.groupCompleted
+          ? filteredItems.filter(i => !i.completed)
+          : filteredItems;
+        const completedItems = state.settings.groupCompleted
+          ? filteredItems.filter(i => i.completed)
+          : [];
+
+        const renderItemRow = (item) => {
+          const origIdx = chap.items.findIndex(x => x.id === item.id);
+          const dueInfo = formatDueStatus(item.dueDate);
+          const notesOpen = openNotesIds.has(item.id);
+          return `
+            <div class="item-row-wrap ${item.completed ? 'completed' : ''} ${notesOpen ? 'notes-open' : ''}"
+              tabindex="0"
+              draggable="true"
+              data-drag-type="item"
+              data-subject-id="${subj.id}"
+              data-chapter-id="${chap.id}"
+              data-item-id="${item.id}"
+              data-index="${origIdx}">
+              <div class="item-row">
+                <span class="drag-handle" title="Drag to reorder or press Alt+Up/Down" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/>
+                    <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
+                    <circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
+                  </svg>
+                </span>
+                <button type="button" class="custom-checkbox ${item.completed ? 'checked' : ''}"
+                  data-action="toggle-item" data-subject-id="${subj.id}" data-item-id="${item.id}"
+                  aria-label="Mark ${escapeHTML(item.title)} as ${item.completed ? 'incomplete' : 'complete'}">
+                  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+                <span class="item-title" data-action="edit-item-title" data-subject-id="${subj.id}" data-item-id="${item.id}" title="Double-click to edit title">
+                  ${highlightMatch(item.title, state.searchQuery)}
+                </span>
+                <div class="item-meta-group">
+                  <button type="button" class="priority-pill priority-${item.priority || 'medium'}"
+                    data-action="cycle-priority" data-subject-id="${subj.id}" data-item-id="${item.id}"
+                    title="Click to cycle priority (Easy / Medium / Hard)">
+                    ${escapeHTML(item.priority || 'medium')}
+                  </button>
+                  <button type="button" class="due-chip ${dueInfo ? dueInfo.cls : ''}"
+                    data-action="edit-due-date" data-subject-id="${subj.id}" data-item-id="${item.id}"
+                    title="Set or update due date">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                    </svg>
+                    <span class="due-text">${dueInfo ? dueInfo.label : 'Date'}</span>
+                  </button>
+                  <button type="button" class="row-icon-btn ${item.notes && item.notes.trim() ? 'has-notes' : ''}"
+                    data-action="toggle-notes" data-item-id="${item.id}"
+                    title="Toggle inline study notes" aria-label="Toggle notes">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                  </button>
+                  <button type="button" class="row-icon-btn ${item.starred ? 'starred' : ''}"
+                    data-action="toggle-star" data-subject-id="${subj.id}" data-item-id="${item.id}"
+                    title="Flag for Revise Later" aria-label="Star item for revision">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="${item.starred ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                  </button>
+                  <button type="button" class="row-icon-btn"
+                    data-action="delete-item" data-subject-id="${subj.id}" data-item-id="${item.id}"
+                    title="Delete item (Delete)" aria-label="Delete item">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="item-notes-drawer">
+                <textarea class="notes-textarea"
+                  data-action="save-notes" data-subject-id="${subj.id}" data-item-id="${item.id}"
+                  placeholder="Add key formulas, intuition, or summary notes for ${escapeHTML(item.title)}...">${escapeHTML(item.notes || '')}</textarea>
+              </div>
+            </div>
+          `;
+        };
+
+        return `
+          <section class="chapter-card ${chap.collapsed ? 'collapsed' : ''}"
+            id="chapter-card-${chap.id}"
+            draggable="true" data-drag-type="chapter" data-subject-id="${subj.id}" data-chapter-id="${chap.id}" data-index="${cIdx}">
+            <div class="chapter-header">
+              <div class="chapter-header-left">
+                <button type="button" class="chapter-collapse-btn" data-action="toggle-chapter" data-subject-id="${subj.id}" data-chapter-id="${chap.id}" aria-label="Toggle chapter">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
+                <h3 class="chapter-title" data-action="rename-chapter" data-subject-id="${subj.id}" data-chapter-id="${chap.id}" title="Click to rename chapter" style="cursor:pointer;">
+                  ${escapeHTML(chap.title)}
+                </h3>
+              </div>
+              <div class="chapter-header-right">
+                <span style="font-family:var(--font-heading);font-size:12px;color:${chapPct === 100 && chapTotal > 0 ? 'var(--lime)' : 'var(--text-muted)'};font-weight:600;">
+                  ${chapDone} / ${chapTotal} (${chapPct}%)
+                </span>
+                <div class="chapter-mini-bar">
+                  <div class="progress-fill" style="width:${chapPct}%;"></div>
+                </div>
+                <button type="button" class="row-icon-btn" data-action="delete-chapter" data-subject-id="${subj.id}" data-chapter-id="${chap.id}" title="Delete chapter" aria-label="Delete chapter">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6 6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="chapter-body">
+              <!-- Inline Quick Add Input -->
+              <div class="quick-add-row">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--cobalt)" stroke-width="2.2">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+                <input type="text" class="quick-add-input"
+                  data-quick-add-chapter="${chap.id}"
+                  data-subject-id="${subj.id}"
+                  placeholder="Add topic to ${escapeHTML(chap.title)}... (Press Enter)" />
+                <span class="syntax-hint">
+                  <span class="kbd">!hard</span>
+                  <span class="kbd">@tomorrow</span>
+                  <span class="kbd">*</span>
+                </span>
+              </div>
+
+              <div class="items-list">
+                ${activeItems.map(renderItemRow).join('')}
+              </div>
+
+              ${completedItems.length > 0 ? `
+                <div class="completed-group-divider">
+                  <span>Completed (${completedItems.length})</span>
+                </div>
+                <div class="items-list">
+                  ${completedItems.map(renderItemRow).join('')}
+                </div>
+              ` : ''}
+
+              ${activeItems.length === 0 && completedItems.length === 0 ? `
+                <div class="empty-state" style="padding:20px;">
+                  <p style="font-size:13px;">No matching topics in this chapter.</p>
+                </div>
+              ` : ''}
+            </div>
+          </section>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <!-- Subject Header Card -->
+        <section class="subject-header-card">
+          <div class="subject-header-top">
+            <div class="subject-title-group">
+              <button type="button" class="subject-avatar" data-action="edit-subject-badge" data-subject-id="${subj.id}" title="Click to change badge initials">
+                ${escapeHTML(subj.badge || subj.name.slice(0, 2).toUpperCase())}
+              </button>
+              <div>
+                <h1 class="subject-title-editable" contenteditable="true" spellcheck="false"
+                  id="subject-inline-title" data-subject-id="${subj.id}"
+                  aria-label="Subject Name (click to edit)">${escapeHTML(subj.name)}</h1>
+                <div style="font-size:12px;color:var(--text-muted);">Click title to rename inline • Drag items or press Alt+↑/↓ to reorder</div>
+              </div>
+            </div>
+
+            <div class="subject-actions-bar">
+              <button type="button" class="btn btn-secondary" data-action="add-chapter" data-subject-id="${subj.id}">+ Chapter</button>
+              <button type="button" class="btn btn-secondary" data-action="open-bulk-add" data-subject-id="${subj.id}">Bulk Add</button>
+              <button type="button" class="btn btn-secondary" data-action="reset-subject" data-subject-id="${subj.id}">Reset</button>
+              <button type="button" class="btn btn-secondary" data-action="open-export-import">Export</button>
+              <button type="button" class="btn btn-ghost" data-action="delete-subject" data-subject-id="${subj.id}" title="Delete Subject">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="subject-hero-progress">
+            <div class="subject-hero-progress-top">
+              <span class="subject-big-status">${st.done} / ${st.total} done - ${st.pct}%</span>
+              <span style="font-size:12.5px;color:var(--text-muted);">${st.pending} pending topics</span>
+            </div>
+            <div class="progress-track" style="height:12px;">
+              <div class="progress-fill shimmer" style="width:${st.pct}%;"></div>
+            </div>
+          </div>
+
+          <div class="stats-chips-row">
+            <span class="stat-pill"><strong>${st.total}</strong>Total</span>
+            <span class="stat-pill"><strong>${st.done}</strong>Done</span>
+            <span class="stat-pill"><strong>${st.pending}</strong>Pending</span>
+            <span class="stat-pill"><strong>${st.starred}</strong>Revise Later</span>
+          </div>
+        </section>
+
+        <!-- Filter, Search & Sort Bar -->
+        <div class="filter-bar">
+          <div class="segmented-control" role="tablist" aria-label="Filter items">
+            <button type="button" class="seg-btn ${state.filter === 'all' ? 'active' : ''}" data-action="set-filter" data-filter="all">All</button>
+            <button type="button" class="seg-btn ${state.filter === 'pending' ? 'active' : ''}" data-action="set-filter" data-filter="pending">Pending</button>
+            <button type="button" class="seg-btn ${state.filter === 'completed' ? 'active' : ''}" data-action="set-filter" data-filter="completed">Completed</button>
+            <button type="button" class="seg-btn ${state.filter === 'starred' ? 'active' : ''}" data-action="set-filter" data-filter="starred">★ Starred</button>
+          </div>
+
+          <div class="filter-search-group">
+            <div class="search-input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+              </svg>
+              <input type="text" id="subject-search-input" class="search-input" placeholder="Filter topics or notes (/)" value="${escapeHTML(state.searchQuery)}" />
+            </div>
+            <select id="subject-sort-select" class="select-control" aria-label="Sort items">
+              <option value="manual" ${state.sortBy === 'manual' ? 'selected' : ''}>Sort: Manual</option>
+              <option value="priority" ${state.sortBy === 'priority' ? 'selected' : ''}>Sort: Priority</option>
+              <option value="dueDate" ${state.sortBy === 'dueDate' ? 'selected' : ''}>Sort: Due Date</option>
+              <option value="alpha" ${state.sortBy === 'alpha' ? 'selected' : ''}>Sort: A–Z</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Chapters Stack -->
+        <div class="chapters-stack">
+          ${chaptersHTML}
+        </div>
+      `;
+
+      // Bind inline subject title blur/Enter listener
+      const inlineTitle = document.getElementById('subject-inline-title');
+      if (inlineTitle) {
+        inlineTitle.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            inlineTitle.blur();
+          }
+        });
+        inlineTitle.addEventListener('blur', () => {
+          const nextName = inlineTitle.textContent.trim();
+          if (nextName && nextName !== subj.name) {
+            subj.name = nextName;
+            saveState();
+            renderSidebar();
+            renderTopbar();
+          } else {
+            inlineTitle.textContent = subj.name;
+          }
+        });
+      }
+
+      // Bind search and sort inputs
+      const searchInput = document.getElementById('subject-search-input');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          const pos = e.target.selectionStart;
+          state.searchQuery = e.target.value;
+          renderSubjectPage(container);
+          const nextInput = document.getElementById('subject-search-input');
+          if (nextInput) {
+            nextInput.focus();
+            nextInput.setSelectionRange(pos, pos);
+          }
+        });
+      }
+
+      const sortSelect = document.getElementById('subject-sort-select');
+      if (sortSelect) {
+        sortSelect.addEventListener('change', (e) => {
+          state.sortBy = e.target.value;
+          renderSubjectPage(container);
+        });
+      }
+    }
+
+    function renderReviseView(container) {
+      const groups = [];
+      for (const subj of state.subjects) {
+        const items = [];
+        for (const chap of subj.chapters) {
+          for (const item of chap.items) {
+            if (item.starred) items.push({ chap, item });
+          }
+        }
+        if (items.length > 0) groups.push({ subj, items });
+      }
+
+      container.innerHTML = `
+        <section class="subject-header-card">
+          <span class="eyebrow">Dedicated Revision Hub</span>
+          <h1 class="hero-title" style="margin-top:8px;">Revise Later Queue</h1>
+          <p class="hero-sub" style="margin-top:4px;">All high-leverage concepts you starred across every subject for spaced repetition.</p>
+        </section>
+
+        ${groups.length > 0 ? groups.map(({ subj, items }) => `
+          <section class="chapter-card" style="margin-bottom:16px;">
+            <div class="chapter-header">
+              <div class="chapter-header-left">
+                <span class="subject-badge-sm">${escapeHTML(subj.badge)}</span>
+                <h3 class="chapter-title" style="cursor:pointer;" data-action="open-subject" data-subject-id="${subj.id}">${escapeHTML(subj.name)}</h3>
+              </div>
+              <span class="kbd">${items.length} starred</span>
+            </div>
+            <div class="chapter-body">
+              <div class="items-list">
+                ${items.map(({ chap, item }) => `
+                  <div class="item-row-wrap ${item.completed ? 'completed' : ''}">
+                    <div class="item-row">
+                      <button type="button" class="custom-checkbox ${item.completed ? 'checked' : ''}"
+                        data-action="toggle-item" data-subject-id="${subj.id}" data-item-id="${item.id}">
+                        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                      </button>
+                      <div style="flex:1;min-width:0;">
+                        <div class="item-title">${escapeHTML(item.title)}</div>
+                        <div style="font-size:11.5px;color:var(--text-muted);">${escapeHTML(chap.title)}</div>
+                      </div>
+                      <div class="item-meta-group">
+                        <span class="priority-pill priority-${item.priority || 'medium'}">${escapeHTML(item.priority || 'medium')}</span>
+                        <button type="button" class="row-icon-btn starred" data-action="toggle-star" data-subject-id="${subj.id}" data-item-id="${item.id}" title="Remove star">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </section>
+        `).join('') : `
+          <div class="card empty-state">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--lime)" stroke-width="1.8">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <h3 style="color:var(--text-primary);font-size:17px;">No topics flagged for revision</h3>
+            <p>Click the star icon on any topic row to pin tricky concepts here.</p>
+            <button type="button" class="btn btn-primary" data-action="nav-dashboard">Back to Dashboard</button>
+          </div>
+        `}
+      `;
+    }
+
+    function renderApp() {
+      applyThemeAndPrefs();
+      renderSidebar();
+      renderTopbar();
+
+      const viewContainer = document.getElementById('app-view');
+      if (!viewContainer) return;
+
+      if (isBooting) {
+        viewContainer.innerHTML = `
+          <div class="skeleton-screen">
+            <div class="skel-box" style="grid-column: span 6;"></div>
+            <div class="skel-box" style="grid-column: span 3;"></div>
+            <div class="skel-box" style="grid-column: span 3;"></div>
+            <div class="skel-box" style="grid-column: span 12; height: 220px;"></div>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.view === 'dashboard') {
+        renderDashboard(viewContainer);
+      } else if (state.view === 'revise') {
+        renderReviseView(viewContainer);
+      } else {
+        renderSubjectPage(viewContainer);
+      }
+    }
+
+    /* ==========================================================================
+       SECTION 6: TOASTS, CONFETTI & POMODORO TIMER
+       ========================================================================== */
+    function showToast(message, withUndo = false) {
+      const stack = document.getElementById('toast-stack');
+      if (!stack) return;
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `
+        <span style="font-size:13px;font-weight:500;">${escapeHTML(message)}</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          ${withUndo ? `<button type="button" class="btn btn-lime" style="padding:4px 10px;min-height:28px;font-size:12px;" data-action="undo-toast">Undo</button>` : ''}
+          <button type="button" class="row-icon-btn" style="width:24px;height:24px;" aria-label="Dismiss">✕</button>
+        </div>
+      `;
+      const closeBtn = toast.querySelector('.row-icon-btn');
+      closeBtn.addEventListener('click', () => toast.remove());
+      const undoBtn = toast.querySelector('[data-action="undo-toast"]');
+      if (undoBtn) {
+        undoBtn.addEventListener('click', () => {
+          triggerUndo();
+          toast.remove();
+        });
+      }
+      stack.appendChild(toast);
+      setTimeout(() => {
+        if (toast.parentNode) toast.remove();
+      }, 5200);
+    }
+
+    function launchConfetti() {
+      if (state.settings.reduceMotion || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+        return;
+      }
+      const canvas = document.getElementById('confetti-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const palette = ['#1558C9', '#D4FF24', '#F2F5FA'];
+      const particles = Array.from({ length: 110 }, () => ({
+        x: canvas.width / 2 + (Math.random() - 0.5) * 180,
+        y: canvas.height * 0.35,
+        vx: (Math.random() - 0.5) * 16,
+        vy: -Math.random() * 14 - 4,
+        size: Math.random() * 7 + 4,
+        color: palette[Math.floor(Math.random() * palette.length)],
+        rot: Math.random() * Math.PI * 2,
+        vRot: (Math.random() - 0.5) * 0.25
+      }));
+
+      const start = performance.now();
+      function frame(now) {
+        const elapsed = now - start;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (const p of particles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.38; // gravity
+          p.rot += p.vRot;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+          ctx.restore();
+        }
+        if (elapsed < 2200) {
+          requestAnimationFrame(frame);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function updatePomoUI() {
+      const mm = String(Math.floor(pomo.secondsLeft / 60)).padStart(2, '0');
+      const ss = String(pomo.secondsLeft % 60).padStart(2, '0');
+      const disp = document.getElementById('pomo-time-display');
+      const widget = document.getElementById('pomo-widget');
+      const ring = document.getElementById('pomo-ring-circle');
+      if (disp) disp.textContent = `${mm}:${ss}`;
+      if (widget) widget.classList.toggle('running', pomo.running);
+      if (ring) {
+        const circ = 56.5;
+        const pct = pomo.secondsLeft / pomo.totalSeconds;
+        ring.setAttribute('stroke-dashoffset', String((circ * (1 - pct)).toFixed(2)));
+      }
+    }
+
+    function togglePomoTimer() {
+      if (pomo.running) {
+        clearInterval(pomo.intervalId);
+        pomo.running = false;
+        showToast('Pomodoro timer paused.');
+      } else {
+        pomo.running = true;
+        showToast(pomo.mode === 'focus' ? '25m Focus session started!' : '5m Break timer started!');
+        pomo.intervalId = setInterval(() => {
+          pomo.secondsLeft--;
+          if (pomo.mode === 'focus' && pomo.secondsLeft % 60 === 0 && pomo.secondsLeft > 0) {
+            state.stats.studyMinutesToday = (state.stats.studyMinutesToday || 0) + 1;
+            saveState();
+          }
+          if (pomo.secondsLeft <= 0) {
+            clearInterval(pomo.intervalId);
+            pomo.running = false;
+            if (pomo.mode === 'focus') {
+              state.stats.studyMinutesToday = (state.stats.studyMinutesToday || 0) + 1;
+              pomo.mode = 'break';
+              pomo.totalSeconds = 5 * 60;
+              pomo.secondsLeft = 5 * 60;
+              showToast('Focus session complete! Switching to 5-minute break.');
+            } else {
+              pomo.mode = 'focus';
+              pomo.totalSeconds = 25 * 60;
+              pomo.secondsLeft = 25 * 60;
+              showToast('Break finished! Ready for another 25m focus sprint.');
+            }
+            saveState();
+            renderApp();
+          }
+          updatePomoUI();
+        }, 1000);
+      }
+      updatePomoUI();
+    }
+
+    /* ==========================================================================
+       SECTION 7: CORE ACTIONS, MODALS & COMMAND PALETTE
+       ========================================================================== */
+    function toggleItemCheckbox(subjectId, itemId) {
+      const subj = state.subjects.find(s => s.id === subjectId);
+      if (!subj) return;
+
+      let targetChap = null;
+      let targetItem = null;
+      for (const chap of subj.chapters) {
+        const found = chap.items.find(i => i.id === itemId);
+        if (found) {
+          targetChap = chap;
+          targetItem = found;
+          break;
+        }
+      }
+      if (!targetItem) return;
+
+      const prevStats = getSubjectStats(subj);
+      targetItem.completed = !targetItem.completed;
+
+      // Update today's activity count & streak
+      const todayKey = todayISO(0);
+      if (targetItem.completed) {
+        state.stats.activityLog[todayKey] = (state.stats.activityLog[todayKey] || 0) + 1;
+        if (state.stats.activityLog[todayKey] === 1) {
+          state.stats.currentStreak = (state.stats.currentStreak || 0) + 1;
+          if (state.stats.currentStreak > state.stats.bestStreak) {
+            state.stats.bestStreak = state.stats.currentStreak;
+          }
+        }
+      } else {
+        state.stats.activityLog[todayKey] = Math.max(0, (state.stats.activityLog[todayKey] || 1) - 1);
+      }
+
+      const nextStats = getSubjectStats(subj);
+      announce(`${targetItem.title} marked ${targetItem.completed ? 'completed' : 'incomplete'}. ${subj.name} progress is now ${nextStats.pct} percent.`);
+
+      saveState();
+      renderApp();
+
+      // Check chapter 100% pulse
+      if (targetItem.completed && targetChap.items.every(i => i.completed)) {
+        const chapEl = document.getElementById(`chapter-card-${targetChap.id}`);
+        if (chapEl) {
+          chapEl.classList.add('chapter-pulse');
+        }
+      }
+
+      // Check Subject Milestones (25 / 50 / 75 / 100%)
+      if (targetItem.completed && nextStats.pct > prevStats.pct) {
+        if (nextStats.pct === 100 && nextStats.total > 0) {
+          launchConfetti();
+          openCelebrationModal(subj, nextStats);
+        } else if (nextStats.pct >= 75 && prevStats.pct < 75) {
+          showToast(`Milestone: 75% of ${subj.name} completed!`);
+        } else if (nextStats.pct >= 50 && prevStats.pct < 50) {
+          showToast(`Halfway milestone: 50% of ${subj.name} completed!`);
+        } else if (nextStats.pct >= 25 && prevStats.pct < 25) {
+          showToast(`Great momentum: 25% of ${subj.name} completed!`);
+        }
+      }
+    }
+
+    function openGenericModal(title, bodyHTML, footerHTML) {
+      document.getElementById('generic-modal-title').textContent = title;
+      document.getElementById('generic-modal-body').innerHTML = bodyHTML;
+      document.getElementById('generic-modal-footer').innerHTML = footerHTML;
+      document.getElementById('generic-modal').classList.add('open');
+      const firstInput = document.querySelector('#generic-modal-body input, #generic-modal-body textarea');
+      if (firstInput) setTimeout(() => firstInput.focus(), 40);
+    }
+
+    function closeAllModals() {
+      document.getElementById('generic-modal').classList.remove('open');
+      document.getElementById('cmd-modal').classList.remove('open');
+    }
+
+    function openCelebrationModal(subj, st) {
+      const daysTaken = Math.max(1, Math.round((Date.now() - new Date((subj.createdAt || todayISO(-7)) + 'T00:00:00').getTime()) / 86400000));
+      openGenericModal(
+        `100% Subject Mastery: ${subj.name}`,
+        `
+          <div style="text-align:center;padding:12px 0;">
+            <div style="width:64px;height:64px;border-radius:18px;background:var(--lime);color:var(--text-on-lime);display:grid;place-items:center;margin:0 auto 16px;font-family:var(--font-heading);font-size:24px;font-weight:700;">100%</div>
+            <h4 style="font-size:20px;margin-bottom:6px;">Every topic in ${escapeHTML(subj.name)} is complete!</h4>
+            <p style="color:var(--text-muted);font-size:13.5px;margin-bottom:20px;">You systematically cleared every chapter in this subject.</p>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+              <div class="stat-pill"><strong>${st.total}</strong>Topics Done</div>
+              <div class="stat-pill"><strong>${subj.chapters.length}</strong>Chapters</div>
+              <div class="stat-pill"><strong>${daysTaken}d</strong>Span</div>
+            </div>
+          </div>
+        `,
+        `<button type="button" class="btn btn-lime" data-action="close-modal">Keep Going</button>`
+      );
+    }
+
+    function openNewSubjectModal() {
+      openGenericModal(
+        'Create New Subject',
+        `
+          <div class="form-group">
+            <label class="form-label" for="new-subj-name">Subject Name</label>
+            <input type="text" id="new-subj-name" class="form-input" placeholder="e.g., Operating Systems, Deep Learning" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="new-subj-badge">2-Letter Badge Icon</label>
+            <input type="text" id="new-subj-badge" class="form-input" maxlength="2" placeholder="e.g., OS" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="new-subj-first-chap">Initial Chapter Title</label>
+            <input type="text" id="new-subj-first-chap" class="form-input" value="Unit 1: Core Concepts" />
+          </div>
+        `,
+        `
+          <button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="confirm-create-subj">Create Subject</button>
+        `
+      );
+
+      document.getElementById('confirm-create-subj').addEventListener('click', () => {
+        const name = document.getElementById('new-subj-name').value.trim();
+        if (!name) return;
+        const badge = (document.getElementById('new-subj-badge').value.trim() || name.slice(0, 2)).toUpperCase();
+        const chapTitle = document.getElementById('new-subj-first-chap').value.trim() || 'Unit 1: Core Concepts';
+        const newSubj = {
+          id: uid('subj'),
+          name,
+          badge,
+          createdAt: todayISO(0),
+          chapters: [{ id: uid('chap'), title: chapTitle, collapsed: false, items: [] }]
+        };
+        state.subjects.push(newSubj);
+        state.activeSubjectId = newSubj.id;
+        state.view = 'subject';
+        saveState();
+        closeAllModals();
+        renderApp();
+        showToast(`Created subject "${name}"`);
+      });
+    }
+
+    function openQuickAddModal() {
+      const subjOptions = state.subjects.map(s => `<option value="${s.id}" ${s.id === state.activeSubjectId ? 'selected' : ''}>${escapeHTML(s.name)}</option>`).join('');
+      openGenericModal(
+        'Quick Add Study Topic',
+        `
+          <div class="form-group">
+            <label class="form-label" for="qa-subj">Subject</label>
+            <select id="qa-subj" class="form-input">${subjOptions}</select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="qa-title">Topic Title (supports !hard #unit2 @tomorrow *)</label>
+            <input type="text" id="qa-title" class="form-input" placeholder="e.g., Backpropagation !hard @tomorrow *" />
+          </div>
+        `,
+        `
+          <button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="confirm-qa-btn">Add Topic</button>
+        `
+      );
+      document.getElementById('confirm-qa-btn').addEventListener('click', () => {
+        const subjId = document.getElementById('qa-subj').value;
+        const raw = document.getElementById('qa-title').value.trim();
+        if (!raw) return;
+        addQuickItemToSubject(subjId, null, raw);
+        closeAllModals();
+      });
+    }
+
+    function addQuickItemToSubject(subjectId, defaultChapterId, rawText) {
+      const subj = state.subjects.find(s => s.id === subjectId);
+      if (!subj) return;
+      const parsed = parseQuickInput(rawText);
+      let targetChap = subj.chapters.find(c => c.id === defaultChapterId) || subj.chapters[0];
+
+      if (parsed.chapterHint) {
+        const matchChap = subj.chapters.find(c => c.title.toLowerCase().includes(parsed.chapterHint.toLowerCase()));
+        if (matchChap) {
+          targetChap = matchChap;
+        } else {
+          targetChap = { id: uid('chap'), title: parsed.chapterHint, collapsed: false, items: [] };
+          subj.chapters.push(targetChap);
+        }
+      }
+
+      if (!targetChap) {
+        targetChap = { id: uid('chap'), title: 'Unit 1', collapsed: false, items: [] };
+        subj.chapters.push(targetChap);
+      }
+
+      targetChap.items.push({
+        id: uid('item'),
+        title: parsed.title,
+        completed: false,
+        priority: parsed.priority,
+        starred: parsed.starred,
+        dueDate: parsed.dueDate,
+        notes: ''
+      });
+
+      saveState();
+      renderApp();
+      showToast(`Added "${parsed.title}" to ${subj.name}`);
+    }
+
+    function openBulkAddModal(subjectId) {
+      const subj = state.subjects.find(s => s.id === subjectId);
+      if (!subj) return;
+      openGenericModal(
+        `Bulk Add to ${subj.name}`,
+        `
+          <p style="font-size:13px;color:var(--text-muted);">Paste multiple lines below. Lines starting with <code>#</code> create a new chapter; other lines become study items (supports <code>!hard @tomorrow *</code>).</p>
+          <div class="form-group">
+            <textarea id="bulk-textarea" class="form-textarea" rows="8" placeholder="# Unit 5: Transformers&#10;Self-Attention Mechanism !hard *&#10;Positional Encoding !medium @tomorrow&#10;Multi-Head Attention"></textarea>
+          </div>
+          <div id="bulk-preview" class="stat-pill">Preview: 0 chapters, 0 items</div>
+        `,
+        `
+          <button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>
+          <button type="button" class="btn btn-lime" id="confirm-bulk-btn">Import Lines</button>
+        `
+      );
+
+      const ta = document.getElementById('bulk-textarea');
+      const prev = document.getElementById('bulk-preview');
+      ta.addEventListener('input', () => {
+        const lines = ta.value.split('\n').map(l => l.trim()).filter(Boolean);
+        const chaps = lines.filter(l => l.startsWith('#')).length;
+        const items = lines.length - chaps;
+        prev.innerHTML = `Preview: <strong>${chaps}</strong> new chapter${chaps === 1 ? '' : 's'}, <strong>${items}</strong> topic item${items === 1 ? '' : 's'}`;
+      });
+
+      document.getElementById('confirm-bulk-btn').addEventListener('click', () => {
+        const lines = ta.value.split('\n').map(l => l.trim()).filter(Boolean);
+        if (!lines.length) return;
+        let currentChap = subj.chapters[0];
+        if (!currentChap) {
+          currentChap = { id: uid('chap'), title: 'Unit 1', collapsed: false, items: [] };
+          subj.chapters.push(currentChap);
+        }
+        let addedCount = 0;
+        for (const line of lines) {
+          if (line.startsWith('#')) {
+            const cTitle = line.replace(/^#+\s*/, '').trim() || 'New Chapter';
+            currentChap = { id: uid('chap'), title: cTitle, collapsed: false, items: [] };
+            subj.chapters.push(currentChap);
+          } else {
+            const parsed = parseQuickInput(line);
+            currentChap.items.push({
+              id: uid('item'),
+              title: parsed.title,
+              completed: false,
+              priority: parsed.priority,
+              starred: parsed.starred,
+              dueDate: parsed.dueDate,
+              notes: ''
+            });
+            addedCount++;
+          }
+        }
+        saveState();
+        closeAllModals();
+        renderApp();
+        showToast(`Bulk added ${addedCount} items to ${subj.name}`);
+      });
+    }
+
+    function openExportImportModal() {
+      const jsonStr = JSON.stringify(state, null, 2);
+      openGenericModal(
+        'Backup: Export & Import JSON',
+        `
+          <div class="form-group">
+            <label class="form-label">Export Current Data</label>
+            <div style="display:flex;gap:8px;">
+              <button type="button" class="btn btn-primary" id="download-json-btn">Download .json Backup</button>
+              <button type="button" class="btn btn-secondary" id="copy-json-btn">Copy JSON</button>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:8px;">
+            <label class="form-label" for="import-json-ta">Import JSON Backup (Paste below)</label>
+            <textarea id="import-json-ta" class="form-textarea" rows="6" placeholder="Paste exported JSON here..."></textarea>
+          </div>
+          <div style="display:flex;gap:16px;font-size:13px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="radio" name="import-mode" value="merge" checked /> Merge with current subjects
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="radio" name="import-mode" value="replace" /> Replace all data
+            </label>
+          </div>
+        `,
+        `
+          <button type="button" class="btn btn-secondary" data-action="close-modal">Close</button>
+          <button type="button" class="btn btn-lime" id="run-import-btn">Import JSON</button>
+        `
+      );
+
+      document.getElementById('download-json-btn').addEventListener('click', () => {
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `study-progress-backup-${todayISO(0)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Downloaded JSON backup file.');
+      });
+
+      document.getElementById('copy-json-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(jsonStr).then(() => showToast('Copied backup JSON to clipboard.'));
+      });
+
+      document.getElementById('run-import-btn').addEventListener('click', () => {
+        const raw = document.getElementById('import-json-ta').value.trim();
+        if (!raw) return;
+        try {
+          const parsed = JSON.parse(raw);
+          if (!parsed || !Array.isArray(parsed.subjects)) {
+            showToast('Invalid JSON format: missing subjects array.');
+            return;
+          }
+          pushUndoSnapshot('JSON Import');
+          const mode = document.querySelector('input[name="import-mode"]:checked').value;
+          if (mode === 'replace') {
+            state.subjects = parsed.subjects;
+            if (parsed.stats) state.stats = parsed.stats;
+          } else {
+            const existingIds = new Set(state.subjects.map(s => s.id));
+            for (const s of parsed.subjects) {
+              if (!existingIds.has(s.id)) state.subjects.push(s);
+            }
+          }
+          saveState();
+          closeAllModals();
+          renderApp();
+          showToast('Successfully imported study data!', true);
+        } catch (e) {
+          showToast('JSON parse error: please verify your backup syntax.');
+        }
+      });
+    }
+
+    function openSettingsModal() {
+      openGenericModal(
+        'Workspace Settings',
+        `
+          <div class="form-group">
+            <label class="form-label" for="set-daily-goal">Daily Topic Completion Goal</label>
+            <input type="number" id="set-daily-goal" class="form-input" min="1" max="50" value="${state.settings.dailyGoal || 5}" />
+          </div>
+          <label style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;cursor:pointer;">
+            <span>Group completed items at bottom of chapters</span>
+            <input type="checkbox" id="set-group-completed" ${state.settings.groupCompleted ? 'checked' : ''} />
+          </label>
+          <label style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;cursor:pointer;">
+            <span>Show 12-week activity heatmap on Dashboard</span>
+            <input type="checkbox" id="set-show-heatmap" ${state.settings.showHeatmap ? 'checked' : ''} />
+          </label>
+          <label style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;cursor:pointer;">
+            <span>Reduce motion & disable confetti</span>
+            <input type="checkbox" id="set-reduce-motion" ${state.settings.reduceMotion ? 'checked' : ''} />
+          </label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--border-subtle);">
+            <button type="button" class="btn btn-secondary" id="set-replay-tour">Replay Onboarding Tour</button>
+            <button type="button" class="btn btn-secondary" id="set-reset-demo">Restore Sample Data</button>
+            <button type="button" class="btn btn-ghost" style="color:var(--lime);" id="set-clear-all">Clear All Data</button>
+          </div>
+        `,
+        `
+          <button type="button" class="btn btn-primary" id="save-settings-btn">Save Settings</button>
+        `
+      );
+
+      document.getElementById('save-settings-btn').addEventListener('click', () => {
+        state.settings.dailyGoal = Math.max(1, parseInt(document.getElementById('set-daily-goal').value, 10) || 5);
+        state.settings.groupCompleted = document.getElementById('set-group-completed').checked;
+        state.settings.showHeatmap = document.getElementById('set-show-heatmap').checked;
+        state.settings.reduceMotion = document.getElementById('set-reduce-motion').checked;
+        saveState();
+        closeAllModals();
+        renderApp();
+        showToast('Settings saved.');
+      });
+
+      document.getElementById('set-replay-tour').addEventListener('click', () => {
+        closeAllModals();
+        startTour();
+      });
+
+      document.getElementById('set-reset-demo').addEventListener('click', () => {
+        pushUndoSnapshot('Restore Sample Data');
+        const fresh = buildSampleData();
+        state.subjects = fresh.subjects;
+        state.stats = fresh.stats;
+        state.activeSubjectId = fresh.activeSubjectId;
+        saveState();
+        closeAllModals();
+        renderApp();
+        showToast('Restored default NLP, DBMS & Maths sample data.', true);
+      });
+
+      document.getElementById('set-clear-all').addEventListener('click', () => {
+        pushUndoSnapshot('Clear All Data');
+        state.subjects = [];
+        state.view = 'dashboard';
+        saveState();
+        closeAllModals();
+        renderApp();
+        showToast('Cleared all subjects.', true);
+      });
+    }
+
+    function openShortcutsModal() {
+      openGenericModal(
+        'Keyboard Shortcuts',
+        `
+          <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;font-size:13.5px;">
+            <span>Open Command Palette</span><span class="kbd">Ctrl / Cmd + K</span>
+            <span>Quick Add Study Topic</span><span class="kbd">N</span>
+            <span>Create New Subject</span><span class="kbd">S</span>
+            <span>Focus Search / Filter Input</span><span class="kbd">/</span>
+            <span>Toggle Focus Mode</span><span class="kbd">F</span>
+            <span>Tick / Untick Focused Topic Row</span><span class="kbd">Space</span>
+            <span>Delete Focused Topic Row (with Undo)</span><span class="kbd">Delete</span>
+            <span>Reorder Focused Topic / Chapter</span><span class="kbd">Alt + ↑ / ↓</span>
+            <span>Show Shortcuts Cheat-Sheet</span><span class="kbd">?</span>
+            <span>Close Active Modal</span><span class="kbd">Esc</span>
+          </div>
+        `,
+        `<button type="button" class="btn btn-primary" data-action="close-modal">Got it</button>`
+      );
+    }
+
+    // Command Palette (Ctrl/Cmd + K)
+    function openCommandPalette() {
+      const modal = document.getElementById('cmd-modal');
+      const input = document.getElementById('cmd-search-input');
+      modal.classList.add('open');
+      input.value = '';
+      cmdSelectedIndex = 0;
+      renderCommandResults('');
+      setTimeout(() => input.focus(), 30);
+    }
+
+    function renderCommandResults(query) {
+      const q = query.trim().toLowerCase();
+      const actions = [
+        { label: 'Go to Dashboard', meta: 'Navigation', run: () => { state.view = 'dashboard'; renderApp(); } },
+        { label: 'Open Revise Later Queue', meta: 'Navigation', run: () => { state.view = 'revise'; renderApp(); } },
+        { label: 'Create New Subject', meta: 'Action (S)', run: () => openNewSubjectModal() },
+        { label: 'Quick Add Topic', meta: 'Action (N)', run: () => openQuickAddModal() },
+        { label: 'Toggle Focus Mode', meta: 'Action (F)', run: () => { state.focusMode = !state.focusMode; renderApp(); } },
+        { label: 'Start / Pause Pomodoro Timer', meta: '25m / 5m', run: () => togglePomoTimer() },
+        { label: 'Toggle Dark / Light Theme', meta: 'Appearance', run: () => { state.settings.theme = state.settings.theme === 'dark' ? 'light' : 'dark'; saveState(); renderApp(); } },
+        { label: 'Export / Import JSON Backup', meta: 'Data', run: () => openExportImportModal() },
+        { label: 'Replay Onboarding Tour', meta: 'Help', run: () => startTour() }
+      ];
+
+      for (const subj of state.subjects) {
+        actions.push({
+          label: `Subject: ${subj.name}`,
+          meta: 'Jump to Subject',
+          run: () => { state.activeSubjectId = subj.id; state.view = 'subject'; renderApp(); }
+        });
+        for (const chap of subj.chapters) {
+          for (const item of chap.items) {
+            actions.push({
+              label: `${item.completed ? '✓ ' : ''}${item.title}`,
+              meta: `${subj.name} • ${chap.title}`,
+              run: () => {
+                state.activeSubjectId = subj.id;
+                state.view = 'subject';
+                chap.collapsed = false;
+                renderApp();
+              }
+            });
+          }
+        }
+      }
+
+      cmdFilteredActions = actions.filter(a => a.label.toLowerCase().includes(q) || a.meta.toLowerCase().includes(q)).slice(0, 14);
+      if (cmdSelectedIndex >= cmdFilteredActions.length) cmdSelectedIndex = 0;
+
+      const listEl = document.getElementById('cmd-results-list');
+      if (!cmdFilteredActions.length) {
+        listEl.innerHTML = `<div class="empty-state" style="padding:24px;">No matching subjects, topics, or commands.</div>`;
+        return;
+      }
+
+      listEl.innerHTML = cmdFilteredActions.map((act, idx) => `
+        <button type="button" class="cmd-item ${idx === cmdSelectedIndex ? 'selected' : ''}" data-cmd-idx="${idx}">
+          <span style="font-weight:500;">${highlightMatch(act.label, q)}</span>
+          <span class="kbd">${escapeHTML(act.meta)}</span>
+        </button>
+      `).join('');
+    }
+
+    /* ==========================================================================
+       SECTION 8: ONBOARDING 3-STEP TOUR
+       ========================================================================== */
+    const TOUR_STEPS = [
+      {
+        badge: 'Step 1 of 3 • Bento Analytics',
+        title: 'Track Momentum at a Glance',
+        desc: 'Your Dashboard combines an overall mastery ring, daily streak counter, 12-week cobalt-to-lime heatmap, and weekly velocity chart.'
+      },
+      {
+        badge: 'Step 2 of 3 • Rapid Entry Syntax',
+        title: 'Add Topics at Keyboard Speed',
+        desc: 'Inside any chapter, type topics with inline tags like "Lesk Algorithm !hard @tomorrow *" and press Enter for rapid entry.'
+      },
+      {
+        badge: 'Step 3 of 3 • Command Palette & Focus',
+        title: 'Press Ctrl+K Anywhere',
+        desc: 'Jump to any topic, toggle Focus Mode with the built-in 25/5 Pomodoro timer, or export backups without leaving your keyboard.'
+      }
+    ];
+
+    function startTour() {
+      state.tourStep = 0;
+      state.tourCompleted = false;
+      renderTour();
+    }
+
+    function renderTour() {
+      const banner = document.getElementById('tour-banner');
+      if (state.tourCompleted) {
+        banner.classList.remove('active');
+        return;
+      }
+      const step = TOUR_STEPS[state.tourStep] || TOUR_STEPS[0];
+      document.getElementById('tour-step-badge').textContent = step.badge;
+      document.getElementById('tour-title').textContent = step.title;
+      document.getElementById('tour-desc').textContent = step.desc;
+      document.getElementById('tour-prev-btn').style.visibility = state.tourStep === 0 ? 'hidden' : 'visible';
+      document.getElementById('tour-next-btn').textContent = state.tourStep === TOUR_STEPS.length - 1 ? 'Finish' : 'Next';
+      banner.classList.add('active');
+    }
+
+    /* ==========================================================================
+       SECTION 9: EVENT DELEGATION, DRAG-AND-DROP & KEYBOARD SHORTCUTS
+       ========================================================================== */
+    let dragContext = null;
+
+    function initEvents() {
+      // Global Click Delegation
+      document.addEventListener('click', (e) => {
+        const cmdBtn = e.target.closest('[data-cmd-idx]');
+        if (cmdBtn) {
+          const idx = parseInt(cmdBtn.dataset.cmdIdx, 10);
+          const act = cmdFilteredActions[idx];
+          closeAllModals();
+          if (act) act.run();
+          return;
+        }
+
+        const actionEl = e.target.closest('[data-action]');
+        if (!actionEl) return;
+        const action = actionEl.dataset.action;
+
+        switch (action) {
+          case 'nav-dashboard':
+            e.preventDefault();
+            state.view = 'dashboard';
+            closeMobileDrawer();
+            renderApp();
+            break;
+          case 'nav-revise':
+            state.view = 'revise';
+            closeMobileDrawer();
+            renderApp();
+            break;
+          case 'open-subject': {
+            const subjId = actionEl.dataset.subjectId;
+            if (subjId) {
+              state.activeSubjectId = subjId;
+              state.view = 'subject';
+              closeMobileDrawer();
+              renderApp();
+            }
+            break;
+          }
+          case 'open-drawer':
+            document.getElementById('sidebar').classList.add('drawer-open');
+            document.getElementById('sidebar-overlay').classList.add('open');
+            break;
+          case 'close-drawer':
+            closeMobileDrawer();
+            break;
+          case 'open-cmd':
+            openCommandPalette();
+            break;
+          case 'close-modal':
+            closeAllModals();
+            break;
+          case 'new-subject':
+            openNewSubjectModal();
+            break;
+          case 'quick-add-modal':
+            openQuickAddModal();
+            break;
+          case 'open-settings':
+            openSettingsModal();
+            break;
+          case 'open-shortcuts':
+            openShortcutsModal();
+            break;
+          case 'open-export-import':
+            openExportImportModal();
+            break;
+          case 'toggle-theme':
+            state.settings.theme = state.settings.theme === 'dark' ? 'light' : 'dark';
+            saveState();
+            renderApp();
+            showToast(`Theme switched to ${state.settings.theme} mode.`);
+            break;
+          case 'toggle-pomo':
+            togglePomoTimer();
+            break;
+          case 'toggle-focus-mode':
+            state.focusMode = !state.focusMode;
+            renderApp();
+            showToast(state.focusMode ? 'Focus Mode enabled: hiding completed items & chrome.' : 'Focus Mode disabled.');
+            break;
+          case 'edit-daily-goal':
+            openSettingsModal();
+            break;
+          case 'toggle-item': {
+            e.stopPropagation();
+            toggleItemCheckbox(actionEl.dataset.subjectId, actionEl.dataset.itemId);
+            break;
+          }
+          case 'cycle-priority': {
+            e.stopPropagation();
+            const subj = state.subjects.find(s => s.id === actionEl.dataset.subjectId);
+            if (!subj) break;
+            for (const c of subj.chapters) {
+              const it = c.items.find(i => i.id === actionEl.dataset.itemId);
+              if (it) {
+                const order = ['easy', 'medium', 'hard'];
+                it.priority = order[(order.indexOf(it.priority || 'medium') + 1) % 3];
+                saveState();
+                renderApp();
+                break;
+              }
+            }
+            break;
+          }
+          case 'toggle-star': {
+            e.stopPropagation();
+            const subj = state.subjects.find(s => s.id === actionEl.dataset.subjectId);
+            if (!subj) break;
+            for (const c of subj.chapters) {
+              const it = c.items.find(i => i.id === actionEl.dataset.itemId);
+              if (it) {
+                it.starred = !it.starred;
+                saveState();
+                renderApp();
+                break;
+              }
+            }
+            break;
+          }
+          case 'toggle-notes': {
+            e.stopPropagation();
+            const itemId = actionEl.dataset.itemId;
+            if (openNotesIds.has(itemId)) openNotesIds.delete(itemId);
+            else openNotesIds.add(itemId);
+            renderApp();
+            break;
+          }
+          case 'edit-due-date': {
+            e.stopPropagation();
+            const subj = state.subjects.find(s => s.id === actionEl.dataset.subjectId);
+            if (!subj) break;
+            let targetItem = null;
+            for (const c of subj.chapters) {
+              const found = c.items.find(i => i.id === actionEl.dataset.itemId);
+              if (found) { targetItem = found; break; }
+            }
+            if (!targetItem) break;
+            openGenericModal(
+              `Due Date: ${targetItem.title}`,
+              `
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button type="button" class="btn btn-secondary" data-preset-date="${todayISO(0)}">Today</button>
+                  <button type="button" class="btn btn-secondary" data-preset-date="${todayISO(1)}">Tomorrow</button>
+                  <button type="button" class="btn btn-secondary" data-preset-date="${todayISO(3)}">+3 Days</button>
+                  <button type="button" class="btn btn-ghost" data-preset-date="">Clear Date</button>
+                </div>
+                <div class="form-group" style="margin-top:8px;">
+                  <label class="form-label" for="custom-date-inp">Or pick date</label>
+                  <input type="date" id="custom-date-inp" class="form-input" value="${targetItem.dueDate || todayISO(0)}" />
+                </div>
+              `,
+              `
+                <button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="save-date-btn">Save Date</button>
+              `
+            );
+            document.querySelectorAll('[data-preset-date]').forEach(btn => {
+              btn.addEventListener('click', () => {
+                targetItem.dueDate = btn.dataset.presetDate || null;
+                saveState();
+                closeAllModals();
+                renderApp();
+              });
+            });
+            document.getElementById('save-date-btn').addEventListener('click', () => {
+              targetItem.dueDate = document.getElementById('custom-date-inp').value || null;
+              saveState();
+              closeAllModals();
+              renderApp();
+            });
+            break;
+          }
+          case 'delete-item': {
+            e.stopPropagation();
+            const subj = state.subjects.find(s => s.id === actionEl.dataset.subjectId);
+            if (!subj) break;
+            pushUndoSnapshot('Delete Topic');
+            for (const c of subj.chapters) {
+              const idx = c.items.findIndex(i => i.id === actionEl.dataset.itemId);
+              if (idx !== -1) {
+                const [removed] = c.items.splice(idx, 1);
+                saveState();
+                renderApp();
+                showToast(`Deleted "${removed.title}"`, true);
+                break;
+              }
+            }
+            break;
+          }
+          case 'set-filter':
+            state.filter = actionEl.dataset.filter;
+            renderApp();
+            break;
+          case 'toggle-chapter': {
+            const subj = state.subjects.find(s => s.id === actionEl.dataset.subjectId);
+            const chap = subj && subj.chapters.find(c => c.id === actionEl.dataset.chapterId);
+            if (chap) {
+              chap.collapsed = !chap.collapsed;
+              saveState();
+              renderApp();
+            }
+            break;
+          }
+          case 'add-chapter': {
+            const subj = state.subjects.find(s => s.id === actionEl.dataset.subjectId);
+            if (!subj) break;
+            openGenericModal(
+              'New Chapter / Unit',
+              `
+                <div class="form-group">
+                  <label class="form-label" for="new-chap-inp">Chapter Title</label>
+                  <input type="text" id="new-chap-inp" class="form-input" placeholder="e.g., Unit ${subj.chapters.length + 1}: Advanced Topics" />
+                </div>
+              `,
+              `
+                <button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="save-new-chap-btn">Add Chapter</button>
+              `
+            );
+            document.getElementById('save-new-chap-btn').addEventListener('click', () => {
+              const title = document.getElementById('new-chap-inp').value.trim();
+              if (!title) return;
+              subj.chapters.push({ id: uid('chap'), title, collapsed: false, items: [] });
+              saveState();
+              closeAllModals();
+              renderApp();
+            });
+            break;
+          }
+          case 'rename-chapter': {
+            const subj = state.subjects.find(s => s.id === actionEl.dataset.subjectId);
+            const chap = subj && subj.chapters.find(c => c.id === actionEl.dataset.chapterId);
+            if (!chap) break;
+            openGenericModal(
+              'Rename Chapter',
+              `<input type="text" id="ren-chap-inp" class="form-input" value="${escapeHTML(chap.title)}" />`,
+              `
+                <button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="save-ren-chap-btn">Save</button>
+              `
+            );
+            document.getElementById('save-ren-chap-btn').addEventListener('click', () => {
+              const val = document.getElementById('ren-chap-inp').value.trim();
+              if (val) chap.title = val;
+              saveState();
+              closeAllModals();
+              renderApp();
+            });
+            break;
+          }
+          case 'delete-chapter': {
+            const subj = state.subjects.find(s => s.id === actionEl.dataset.subjectId);
+            if (!subj) break;
+            pushUndoSnapshot('Delete Chapter');
+            subj.chapters = subj.chapters.filter(c => c.id !== actionEl.dataset.chapterId);
+            saveState();
+            renderApp();
+            showToast('Chapter deleted.', true);
+            break;
+          }
+          case 'open-bulk-add':
+            openBulkAddModal(actionEl.dataset.subjectId);
+            break;
+          case 'reset-subject': {
+            const subj = state.subjects.find(s => s.id === actionEl.dataset.subjectId);
+            if (!subj) break;
+            pushUndoSnapshot(`Reset ${subj.name}`);
+            for (const c of subj.chapters) {
+              for (const i of c.items) i.completed = false;
+            }
+            saveState();
+            renderApp();
+            showToast(`Reset all progress in ${subj.name}.`, true);
+            break;
+          }
+          case 'delete-subject': {
+            const subj = state.subjects.find(s => s.id === actionEl.dataset.subjectId);
+            if (!subj) break;
+            pushUndoSnapshot(`Delete ${subj.name}`);
+            state.subjects = state.subjects.filter(s => s.id !== subj.id);
+            state.view = 'dashboard';
+            saveState();
+            renderApp();
+            showToast(`Deleted subject "${subj.name}".`, true);
+            break;
+          }
+          case 'edit-subject-badge': {
+            const subj = state.subjects.find(s => s.id === actionEl.dataset.subjectId);
+            if (!subj) break;
+            openGenericModal(
+              'Update Subject Badge',
+              `<input type="text" id="badge-inp" class="form-input" maxlength="2" value="${escapeHTML(subj.badge)}" />`,
+              `<button type="button" class="btn btn-primary" id="save-badge-btn">Save</button>`
+            );
+            document.getElementById('save-badge-btn').addEventListener('click', () => {
+              const v = document.getElementById('badge-inp').value.trim().toUpperCase();
+              if (v) subj.badge = v;
+              saveState();
+              closeAllModals();
+              renderApp();
+            });
+            break;
+          }
+          case 'skip-tour':
+            state.tourCompleted = true;
+            saveState();
+            renderTour();
+            break;
+          case 'prev-tour':
+            state.tourStep = Math.max(0, state.tourStep - 1);
+            renderTour();
+            break;
+          case 'next-tour':
+            if (state.tourStep < TOUR_STEPS.length - 1) {
+              state.tourStep++;
+            } else {
+              state.tourCompleted = true;
+              saveState();
+            }
+            renderTour();
+            break;
+        }
+      });
+
+      // Double-click to inline edit item title
+      document.addEventListener('dblclick', (e) => {
+        const titleEl = e.target.closest('[data-action="edit-item-title"]');
+        if (!titleEl) return;
+        const subj = state.subjects.find(s => s.id === titleEl.dataset.subjectId);
+        if (!subj) return;
+        let targetItem = null;
+        for (const c of subj.chapters) {
+          const found = c.items.find(i => i.id === titleEl.dataset.itemId);
+          if (found) { targetItem = found; break; }
+        }
+        if (!targetItem) return;
+        titleEl.contentEditable = 'true';
+        titleEl.focus();
+        const finish = () => {
+          titleEl.contentEditable = 'false';
+          const next = titleEl.textContent.trim();
+          if (next) targetItem.title = next;
+          saveState();
+          renderApp();
+        };
+        titleEl.addEventListener('blur', finish, { once: true });
+        titleEl.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter') { ev.preventDefault(); titleEl.blur(); }
+        });
+      });
+
+      // Save inline notes on input
+      document.addEventListener('input', (e) => {
+        if (e.target.matches('[data-action="save-notes"]')) {
+          const subj = state.subjects.find(s => s.id === e.target.dataset.subjectId);
+          if (!subj) return;
+          for (const c of subj.chapters) {
+            const it = c.items.find(i => i.id === e.target.dataset.itemId);
+            if (it) {
+              it.notes = e.target.value;
+              saveState();
+              break;
+            }
+          }
+        }
+      });
+
+      // Inline Quick-Add Enter handler (keeps focus for rapid entry)
+      document.addEventListener('keydown', (e) => {
+        if (e.target.matches('.quick-add-input') && e.key === 'Enter') {
+          e.preventDefault();
+          const raw = e.target.value.trim();
+          if (!raw) return;
+          const chapId = e.target.dataset.quickAddChapter;
+          const subjId = e.target.dataset.subjectId;
+          addQuickItemToSubject(subjId, chapId, raw);
+          const restoredInput = document.querySelector(`.quick-add-input[data-quick-add-chapter="${chapId}"]`);
+          if (restoredInput) restoredInput.focus();
+        }
+      });
+
+      // Command Palette input navigation
+      const cmdInput = document.getElementById('cmd-search-input');
+      cmdInput.addEventListener('input', () => {
+        cmdSelectedIndex = 0;
+        renderCommandResults(cmdInput.value);
+      });
+      cmdInput.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          cmdSelectedIndex = (cmdSelectedIndex + 1) % Math.max(1, cmdFilteredActions.length);
+          renderCommandResults(cmdInput.value);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          cmdSelectedIndex = (cmdSelectedIndex - 1 + Math.max(1, cmdFilteredActions.length)) % Math.max(1, cmdFilteredActions.length);
+          renderCommandResults(cmdInput.value);
+        } else if (e.key === 'Enter' && cmdFilteredActions[cmdSelectedIndex]) {
+          e.preventDefault();
+          const act = cmdFilteredActions[cmdSelectedIndex];
+          closeAllModals();
+          act.run();
+        }
+      });
+
+      // Close modal when clicking backdrop
+      document.querySelectorAll('.modal-backdrop').forEach(bd => {
+        bd.addEventListener('click', (e) => {
+          if (e.target === bd) closeAllModals();
+        });
+      });
+
+      // Global Keyboard Shortcuts
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          openCommandPalette();
+          return;
+        }
+        if (e.key === 'Escape') {
+          closeAllModals();
+          if (state.focusMode) {
+            state.focusMode = false;
+            renderApp();
+          }
+          return;
+        }
+
+        const inEditable = e.target.matches('input, textarea, select, [contenteditable="true"]');
+        if (inEditable) return;
+
+        // Alt + ArrowUp / ArrowDown Keyboard Reordering
+        if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+          const rowEl = document.activeElement && document.activeElement.closest('[data-drag-type="item"]');
+          if (rowEl) {
+            e.preventDefault();
+            const subj = state.subjects.find(s => s.id === rowEl.dataset.subjectId);
+            const chap = subj && subj.chapters.find(c => c.id === rowEl.dataset.chapterId);
+            if (!chap) return;
+            const idx = chap.items.findIndex(i => i.id === rowEl.dataset.itemId);
+            const targetIdx = e.key === 'ArrowUp' ? idx - 1 : idx + 1;
+            if (idx !== -1 && targetIdx >= 0 && targetIdx < chap.items.length) {
+              const [moved] = chap.items.splice(idx, 1);
+              chap.items.splice(targetIdx, 0, moved);
+              saveState();
+              renderApp();
+              const reFocused = document.querySelector(`[data-item-id="${moved.id}"]`);
+              if (reFocused) reFocused.focus();
+            }
+          }
+          return;
+        }
+
+        if (e.key === ' ' && document.activeElement && document.activeElement.matches('.item-row-wrap')) {
+          e.preventDefault();
+          toggleItemCheckbox(document.activeElement.dataset.subjectId, document.activeElement.dataset.itemId);
+          return;
+        }
+
+        if ((e.key === 'Delete' || e.key === 'Backspace') && document.activeElement && document.activeElement.matches('.item-row-wrap')) {
+          e.preventDefault();
+          const btn = document.activeElement.querySelector('[data-action="delete-item"]');
+          if (btn) btn.click();
+          return;
+        }
+
+        if (e.key.toLowerCase() === 'n') {
+          e.preventDefault();
+          const firstQuick = document.querySelector('.quick-add-input');
+          if (firstQuick) firstQuick.focus();
+          else openQuickAddModal();
+        } else if (e.key.toLowerCase() === 's') {
+          e.preventDefault();
+          openNewSubjectModal();
+        } else if (e.key === '/') {
+          e.preventDefault();
+          const sInp = document.getElementById('subject-search-input');
+          if (sInp) sInp.focus();
+          else openCommandPalette();
+        } else if (e.key.toLowerCase() === 'f') {
+          e.preventDefault();
+          state.focusMode = !state.focusMode;
+          renderApp();
+        } else if (e.key === '?') {
+          e.preventDefault();
+          openShortcutsModal();
+        }
+      });
+
+      // Drag and Drop Reordering for Items, Chapters, and Subjects
+      document.addEventListener('dragstart', (e) => {
+        const dragEl = e.target.closest('[draggable="true"]');
+        if (!dragEl) return;
+        dragContext = {
+          type: dragEl.dataset.dragType,
+          subjectId: dragEl.dataset.subjectId,
+          chapterId: dragEl.dataset.chapterId,
+          itemId: dragEl.dataset.itemId,
+          index: parseInt(dragEl.dataset.index, 10)
+        };
+        dragEl.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      document.addEventListener('dragover', (e) => {
+        if (!dragContext) return;
+        const overEl = e.target.closest(`[data-drag-type="${dragContext.type}"]`);
+        if (!overEl) return;
+        e.preventDefault();
+        const rect = overEl.getBoundingClientRect();
+        const isAfter = (e.clientY - rect.top) > rect.height / 2;
+        overEl.classList.toggle('drag-over-bottom', isAfter);
+        overEl.classList.toggle('drag-over-top', !isAfter);
+      });
+
+      document.addEventListener('dragleave', (e) => {
+        const overEl = e.target.closest('[draggable="true"]');
+        if (overEl) {
+          overEl.classList.remove('drag-over-top', 'drag-over-bottom');
+        }
+      });
+
+      document.addEventListener('drop', (e) => {
+        if (!dragContext) return;
+        const dropEl = e.target.closest(`[data-drag-type="${dragContext.type}"]`);
+        document.querySelectorAll('.drag-over-top, .drag-over-bottom, .dragging').forEach(el => {
+          el.classList.remove('drag-over-top', 'drag-over-bottom', 'dragging');
+        });
+        if (!dropEl) { dragContext = null; return; }
+        e.preventDefault();
+
+        const toIndex = parseInt(dropEl.dataset.index, 10);
+        if (dragContext.type === 'subject') {
+          const fromIdx = dragContext.index;
+          if (fromIdx !== toIndex) {
+            const [moved] = state.subjects.splice(fromIdx, 1);
+            state.subjects.splice(toIndex, 0, moved);
+            saveState();
+            renderApp();
+          }
+        } else if (dragContext.type === 'chapter' && dragContext.subjectId === dropEl.dataset.subjectId) {
+          const subj = state.subjects.find(s => s.id === dragContext.subjectId);
+          if (subj && dragContext.index !== toIndex) {
+            const [moved] = subj.chapters.splice(dragContext.index, 1);
+            subj.chapters.splice(toIndex, 0, moved);
+            saveState();
+            renderApp();
+          }
+        } else if (dragContext.type === 'item' && dragContext.subjectId === dropEl.dataset.subjectId) {
+          const subj = state.subjects.find(s => s.id === dragContext.subjectId);
+          const fromChap = subj && subj.chapters.find(c => c.id === dragContext.chapterId);
+          const toChap = subj && subj.chapters.find(c => c.id === dropEl.dataset.chapterId);
+          if (fromChap && toChap) {
+            const [moved] = fromChap.items.splice(dragContext.index, 1);
+            if (moved) {
+              toChap.items.splice(toIndex, 0, moved);
+              saveState();
+              renderApp();
+            }
+          }
+        }
+        dragContext = null;
+      });
+
+      document.addEventListener('dragend', () => {
+        document.querySelectorAll('.drag-over-top, .drag-over-bottom, .dragging').forEach(el => {
+          el.classList.remove('drag-over-top', 'drag-over-bottom', 'dragging');
+        });
+        dragContext = null;
+      });
+    }
+
+    function closeMobileDrawer() {
+      document.getElementById('sidebar').classList.remove('drawer-open');
+      document.getElementById('sidebar-overlay').classList.remove('open');
+    }
+
+    /* ==========================================================================
+       SECTION 10: BOOTSTRAP
+       ========================================================================== */
+    function init() {
+      loadState();
+      initEvents();
+      renderApp();
+
+      // Brief skeleton shimmer transition into full interactive dashboard
+      setTimeout(() => {
+        isBooting = false;
+        renderApp();
+        renderTour();
+      }, 240);
+    }
+
+    init();
+  </script>
+</body>
+</html>
